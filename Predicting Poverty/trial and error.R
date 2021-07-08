@@ -12,7 +12,6 @@ library(dplyr)
 library(gridExtra)
 library(kableExtra)
 library(rpart.plot)
-library(tidyverse)
 library(caret)
 library(grid)
 library(lares)
@@ -48,18 +47,6 @@ set.seed(555)
 dt <- sort(sample(nrow(house.simple), nrow(house.simple)*.7))
 train <- house.simple[dt,]
 test <- house.simple[-dt,]
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #################################################
@@ -145,8 +132,6 @@ test$poverty_level <- as.factor(test$poverty_level)
 # This can be done using trControl function in caret
 
 
-
-
 # define models to try
 models <- c("multinom", "lda", "naive_bayes", "svmLinear", "knn", "rpart", "ranger")
 # set CV control for knn, k-folds
@@ -154,10 +139,11 @@ control <- trainControl(method = "cv", number = 10, p = .9) # 10 fold, 10%
 # fit models
 set.seed(1)
 
-train_models <- lapply(models, function(model){
-    print(model)
+train_models <- lapply(clust,models, function(model){
+        print(model)
     train(poverty_level ~ ., method = model, data = train, trControl = control, metric = "Kappa")
 })
+
 names(train_models) <- models
 
 
