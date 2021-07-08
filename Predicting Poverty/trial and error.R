@@ -2,6 +2,10 @@
 
 # This is the general household survey data - 2018 - STATS SA
 
+##################################################
+############### INTRO ############################
+##################################################
+
 library(tidyverse)
 library(caTools)
 library(dplyr)
@@ -12,18 +16,19 @@ library(tidyverse)
 library(caret)
 library(grid)
 library(lares)
+library(e1071)
 
 # for project, put in an install option for Dawie for lesser known packages like lares or make a note so that he checks that everything is installed.
 
 
 house <- read.csv("C:/Users/jesic/OneDrive/Desktop/ghs-2018-house-1.0-csv.csv")
-house.simple <-  select(house, head_popgrp, head_sex, head_age, Q55Bedr, Q55TotRm, Q57Rent, Q58Val, Q63NrCell, Q814Exp, Q89aGrant, hholdsz, chld17yr_hh, Q42Msal_hh, totmhinc, econact_hh)
+house.simple <-  select(house, head_popgrp, head_sex, head_age, Q55Bedr, Q55TotRm, Q57Rent, Q58Val, Q63NrCell, Q814Exp, Q89aGrant, Q821WashM, hholdsz, chld17yr_hh, Q42Msal_hh, totmhinc, econact_hh)
 
 #add column. We are making the pp person income using the total monthly income and minus the child17 years an
 house.simple$adults <- house.simple$hholdsz - house.simple$chld17yr_hh
 house.simple$income_pp <- house.simple$totmhinc / house.simple$adults
 
-house.simple <- filter(house.simple, Q55Bedr < 99, Q55TotRm < 25, Q814Exp < 11, hholdsz < 15, Q58Val < 9, Q63NrCell < 11, income_pp < 50000, income_pp>0)
+house.simple <- filter(house.simple, Q821WashM <9,Q55Bedr < 99, Q55TotRm < 25, Q814Exp < 11, hholdsz < 15, Q58Val < 9, Q63NrCell < 11, income_pp < 50000, Q821WashM <9)
 
 ## Add column
 # We will define a household under these
@@ -38,14 +43,28 @@ house.simple$poverty_level <- ifelse(house.simple$income_pp <= 547, 1, ifelse(ho
 # here randomly selects 70 % of the rows from the dataset
 # 70% is split into the training one, where 30% of same is in the test dataset
 
-
+##SET SEED HERE
+set.seed(555)
 dt <- sort(sample(nrow(house.simple), nrow(house.simple)*.7))
 train <- house.simple[dt,]
 test <- house.simple[-dt,]
 
 
-## Distribution of poverty levels
 
+
+
+
+
+
+
+
+
+
+
+
+#################################################
+################## FIGURE 3.2 #################
+###############################################
 
 plot1 <- train %>%
     ggplot(aes(as.numeric(poverty_level))) +
@@ -61,6 +80,8 @@ plot1 <- train %>%
 
 plot1
 
+
+
 ######################
 
 no_dummy_index  <- apply(house, 2, function(x) { !all(x %in% 0:1) })
@@ -69,6 +90,8 @@ names(no_dummy)
 #################################################
 
 
+#########################################################
+############# FIGURE 3.3 ################################
 #########################################################
 plot_target_by_var <- function(df, variable){
     var <- enquo(variable)
@@ -84,10 +107,7 @@ p_age <- plot_target_by_var(train, head_age)
 p_size <- plot_target_by_var(train, hholdsz)
 p_hhexp <- plot_target_by_var(train, Q814Exp)
 p_cellphone <- plot_target_by_var(train, Q63NrCell)
-p_adult <- plot_target_by_var(train, adults)
-p_income <- plot_target_by_var(train, income_pp)
 p_room <- plot_target_by_var(train, Q55TotRm)
-p_sex <- plot_target_by_var(train, head_sex)
 p_val <- plot_target_by_var(train, Q58Val)
 #display plots in a grid
 grid.arrange(p_age, p_size, p_hhexp, p_cellphone, p_room , p_val, nrow = 2, top = textGrob("Distribution by poverty levels", gp=gpar(fontsize=15)))
@@ -96,12 +116,16 @@ grid.arrange(p_age, p_size, p_hhexp, p_cellphone, p_room , p_val, nrow = 2, top 
 # yellow = not vulnerable
 
 
-###########################################################
 
+###########################################################
+############## FIGURE 3.4 ##################################
+###########################################################
 #getting rid of the variables that represent the same variable just as monthly household income. Have three variables that basically say the same thing. I want to get rid of them so that we have better information.
-a <- train[,-17] # get rid of income_pp
-b <- a[,-13] # get rid of monthly salary - check.
+a <- train[,-18] # get rid of income_pp
+b <- a[,-14] # get rid of monthly salary - check.
 corr_var(b, poverty_level, top=10)
+
+
 
 #################################################################
 # Our poverty_level needs to be a factor.
@@ -120,8 +144,8 @@ test$poverty_level <- as.factor(test$poverty_level)
 # For performance and speed improvements, we will use a 10 K-fold cross validation to fit our models
 # This can be done using trControl function in caret
 
-install.packages('e1071', dependencies=TRUE)
-library(e1071)
+
+
 
 # define models to try
 models <- c("multinom", "lda", "naive_bayes", "svmLinear", "knn", "rpart", "ranger")
@@ -129,6 +153,7 @@ models <- c("multinom", "lda", "naive_bayes", "svmLinear", "knn", "rpart", "rang
 control <- trainControl(method = "cv", number = 10, p = .9) # 10 fold, 10%
 # fit models
 set.seed(1)
+
 train_models <- lapply(models, function(model){
     print(model)
     train(poverty_level ~ ., method = model, data = train, trControl = control, metric = "Kappa")
@@ -252,7 +277,164 @@ row.names(class4) <-  c("F1", "F2", "F3")
 class4 %>% kable(col.names = models, caption = "F-Beta Scores for Non-Vulnerable Households") %>% kable_styling()
 
 
-# Feauture Importance
-#plot decision tree
+## DO THIS FOR YOUR BEST PERFORMING MODELS. WE CAN CHECK THIS WITH OUR DECISION TREE!!!
+
+get_imp <- function(modelname){
+    imp <- data.frame(varImp(modelname)$importance)
+    imp$Variable <- rownames(imp)
+    imp <- imp[order(-imp$Overall)[1:5], ] %>% select(Variable, Overall)
+    rownames(imp) <- 1:5
+    return(imp)
+}
+imp_multinom <- get_imp(train_models$multinom)
+imp_rpart <- get_imp(train_models$rpart)
+get_imp <- function(modelname){
+    imp <- data.frame(varImp(modelname)$importance)
+    imp$Variable <- rownames(imp)
+    imp <- imp[order(-imp$Overall)[1:10], ] %>% select(Variable, Overall)
+    rownames(imp) <- 1:10
+    return(imp)
+}
+cbind(imp_rpart, imp_multinom) %>% kable(caption = "Most important variables, `rpart` vs. `multinom`") %>% kable_styling()
+
+
+#TREES - notes from DAWIE - DONT KNOW WHAT I AM DOING
+##SIMPLE DECISION TREE
+#Doesn't say anything impressive. - Could be nice in descriptive stats to say how I split it.
+
+#library(rpart)
+#library(rpart.plot)
+
+#More for descriptive
+#fit <- rpart(poverty_level~., data = train, method = 'class')
+#rpart.plot(fit, extra = 106)
+
+vip(fit,bar=FALSE, aesthetics = list(fill="mediumvioletred", col="black")) + ggthemes::theme_economist_white() + labs(title = "Variable Importance Plot", subtitle = "all variables included", caption = "Own calculations")
+#Shows that three income variables are the most important. I dont like this.
+
+# taking income_pp out
+fit1 <- rpart(poverty_level~.-income_pp, data = train, method = 'class')
+rpart.plot(fit1, extra = 106)
+
+
+# Taking all income variables out and adult variable.
+fit2 <- rpart(poverty_level~., data = train[,-c(13,14,16,17)], method = 'class')
+rpart.plot(fit2, extra = 106)
+
+plotcp(fit2)
+
+library(vip)
+
+#Do either one or two here.
+vip(fit2,bar=FALSE, aesthetics = list(fill="lightslateblue", col="black")) + ggthemes::theme_economist_white() + labs(title = "Variable Importance Plot", subtitle = "removed all income variables", caption = "Own calculations")
+
+## RANDOM FOREST
+
+library(randomForest)
+
+model1 <- randomForest(poverty_level~ ., data = train, importance = TRUE)
+model1
+
+model2 <- randomForest(poverty_level ~ ., data = train, ntree = 500, mtry = 6, importance = TRUE)
+model2
+
+predTrain <- predict(model2, train, type = "class")
+table(predTrain, train$poverty_level)
+
+predValid <- predict(model2, test, type = "class")
+
+mean(predValid == test$poverty_level)
+table(predValid, test$poverty_level)
+
+#############################################################
+
+# Define the control
+trControl <- trainControl(method = "cv",
+                          number = 10,
+                          search = "grid")
+
+set.seed(1234)
+# Run the model
+rf_default <- train(poverty_level~.,
+                    data = train,
+                    method = "rf",
+                    metric = "Accuracy",
+                    trControl = trControl)
+
+### SEARCG FOR BEST MTRY (11)
+set.seed(1234)
+tuneGrid <- expand.grid(.mtry = c(1: 17))
+rf_mtry <- train(poverty_level~.,
+                 data = train,
+                 method = "rf",
+                 metric = "Accuracy",
+                 tuneGrid = tuneGrid,
+                 trControl = trControl,
+                 importance = TRUE,
+                 nodesize = 14,
+                 ntree = 300)
+print(rf_mtry)
+
+best_mtry <- rf_mtry$bestTune$mtry
+
+## SEARCH FOR BEST MAXNODES
+
+store_maxnode <- list()
+tuneGrid <- expand.grid(.mtry = best_mtry)
+for (maxnodes in c(1: 15)) {
+    set.seed(1234)
+    rf_maxnode <- train(poverty_level~.,
+                        data = train,
+                        method = "rf",
+                        metric = "Accuracy",
+                        tuneGrid = tuneGrid,
+                        trControl = trControl,
+                        importance = TRUE,
+                        nodesize = 14,
+                        maxnodes = maxnodes,
+                        ntree = 300)
+    current_iteration <- toString(maxnodes)
+    store_maxnode[[current_iteration]] <- rf_maxnode
+}
+results_mtry <- resamples(store_maxnode)
+summary(results_mtry)
+
+########################################################################
+
+rf <- randomForest(poverty_level~.,data=train[,-17], ntree=100, proximity=TRUE)
+table(predict(rf),train$poverty_level)
+plot(rf)
+importance(rf)
+varImpPlot(rf)
+
+rfpred <- predict(rf, newdata=test[,-17])
+table(rfpred,test$poverty_level)
+plot(margin(rf,test$poverty_level))
+
+cm <- table(rfpred, test$poverty_level)
+accuracy <-(sum(diag(cm)))/sum(cm)
+
+###
+set.seed(222)
+rf <- randomForest(poverty_level~.,data=train[,-17], proximity=TRUE)
+p1 <- predict(rf, train)
+confusionMatrix(p1, train$poverty_level)
+
+p2 <- predict(rf, test)
+confusionMatrix(p2, test$poverty_level)
+
+plot(rf)
+
+t <- tuneRF(train[,-17], train[,17],
+            stepFactor = 0.5,
+            plot = TRUE,
+            ntreeTry = 150,
+            trace = TRUE,
+            improve = 0.05)
+
+hist(treesize(rf), main = "No. of Nodes for the Trees", col = "mediumpurple4")
+#Variable Importance
+varImpPlot(rf, sort = T, n.var = 10,
+           main = "Top 10 - Variable Importance")
 
 

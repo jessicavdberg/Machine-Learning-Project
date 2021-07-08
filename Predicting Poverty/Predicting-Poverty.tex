@@ -135,18 +135,26 @@
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 
 %%% Include extra packages specified by user
+\usepackage{booktabs}
+\usepackage{longtable}
 \usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
 \usepackage{caption}
 \usepackage{graphicx}
 \usepackage{siunitx}
-\usepackage[normalem]{ulem}
-\usepackage{colortbl}
-\usepackage{multirow}
 \usepackage{hhline}
 \usepackage{calc}
 \usepackage{tabularx}
-\usepackage{threeparttable}
-\usepackage{wrapfig}
 \usepackage{adjustbox}
 \usepackage{hyperref}
 
@@ -250,54 +258,82 @@ Multivariate GARCH \sep Kalman Filter \sep Copula \\ \vspace{0.3cm}
 \section{\texorpdfstring{Introduction
 \label{Introduction}}{Introduction }}\label{introduction}}
 
-References are to be made as follows:
-\protect\hyperlink{ref-fama1997}{Fama \& French}
-(\protect\hyperlink{ref-fama1997}{1997: 33}) and
-\protect\hyperlink{ref-grinold2000}{Grinold \& Kahn}
-(\protect\hyperlink{ref-grinold2000}{2000}) Such authors could also be
-referenced in brackets (\protect\hyperlink{ref-grinold2000}{Grinold \&
-Kahn, 2000}) and together \protect\hyperlink{ref-grinold2000}{Grinold \&
-Kahn} (\protect\hyperlink{ref-grinold2000}{2000}). Source the reference
-code from scholar.google.com by clicking on ``cite'\,' below article
-name. Then select BibTeX at the bottom of the Cite window, and proceed
-to copy and paste this code into your ref.bib file, located in the
-directory's Tex folder. Open this file in Rstudio for ease of
-management, else open it in your preferred Tex environment. Add and
-manage your article details here for simplicity - once saved, it will
-self-adjust in your paper.
+Since apartheid ended in 1994, the South African Government has
+committed a significant number of resources to distribute grants
+effectively and efficiently to the poor and the vulnerable. However,
+South Africa has remained a country with extremely high levels of
+inequality and poverty for an upper middle-income country
+\protect\hyperlink{ref-stats2011social}{Stats}
+(\protect\hyperlink{ref-stats2011social}{2011}). Previous literature has
+shown that poverty levels are higher in rural areas than in urban areas.
+This is largely due to rural household not having access to the same
+employment opportunities has urban households. South Africa is a country
+with high levels of unemployment and extremely low wages. This implies
+that individuals that are economically active can still fall below the
+upper or lower bound poverty line due to the low wages that they receive
+\protect\hyperlink{ref-leibbrandt2010trends}{Leibbrandt, Woolard, Finn
+\& Argent} (\protect\hyperlink{ref-leibbrandt2010trends}{2010}).
 
-\begin{quote}
-I suggest renaming the top line after @article, as done in the template
-ref.bib file, to something more intuitive for you to remember. Do not
-change the rest of the code. Also, be mindful of the fact that bib
-references from google scholar may at times be incorrect. Reference
-Latex forums for correct bibtex notation.
-\end{quote}
+Poverty remains unacceptably high for a country of South Africa's
+economic status and remains closely associated with race. Thus, poverty
+reduction remains one of the key economic goals. Poverty in money terms
+has declined markedly since apartheid ended in 1994. This was made
+possible by the expansion of the social grant system. However,
+accurately targeting social welfare programs can be challenging given
+that income data is often incorrect
+\protect\hyperlink{ref-vanderberg2017}{Yu \& Van der Berg}
+(\protect\hyperlink{ref-vanderberg2017}{2017}). To overcome this
+problem, households are subject to a proxy means test (PMT) to identify
+whether a household qualifies for social assistant. This essay will try
+to identify new methods to identify households that are below the food
+poverty line, lower-bound poverty line and upper bound poverty line
+using machine learning techniques.
 
-To reference a section, you have to set a label using
-``\textbackslash label'\,' in R, and then reference it in-text as
-e.g.~referencing a later section, Section \ref{Meth}.
+Structure \ldots{} `
 
-Writing in Rmarkdown is surprizingly easy - see
-\href{https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf}{this
-website} cheatsheet for a summary on writing Rmd writing tips.
+\hypertarget{literature-review}{%
+\section{Literature Review}\label{literature-review}}
+
+Write a short literature review here on the background of SOuth Africa -
+max one page
 
 \hypertarget{data}{%
-\section*{Data}\label{data}}
-\addcontentsline{toc}{section}{Data}
+\section{Data}\label{data}}
 
-Notice how I used the curly brackets and dash to remove the numbering of
-the data section.
+The data used for predicting poverty level was exacted from the General
+Household Survey (GHS) 2018, which is a survey completed annually by
+Statistics SA to measure the living circumstances of households in South
+Africa. They survey includes household and individual characteristics.
+After taking out all of the NA values and taking out households who did
+not know or answer the relevant questions, the dataset consists of 14
+546 entries.
 
-Discussion of data should be thorough with a table of statistics and
-ideally a figure.
+Since the GHS consist of household survey, total income per household is
+reported. To calculate the average monthly income per individual within
+each household, I first need to calculate the total number of adults
+within each household. This is done by taking the difference between
+household size and the number of children under the age of 17. I then
+take the total monthly income and divide it by the total number of
+adults to get the average monthly income per individual in each
+household. This income information is then used to divided the data into
+four groups.
 
-In your tempalte folder, you will find a Data and a Code folder. In
-order to keep your data files neat, store all of them in your Data
-folder. Also, I strongly suggest keeping this Rmd file for writing and
-executing commands, not writing out long pieces of data-wrangling. In
-the example below, I simply create a ggplot template for scatter plot
-consistency. I suggest keeping all your data in a data folder.
+The first group is individuals whose income fall below the food poverty
+line. In 2018, the food poverty line was R547 per month. The food
+poverty line is also referred to as the extreme poverty line as it
+refers to the absolute minimum amount an individual will need to be able
+to afford the minimum energy intake for survival. The second group
+consist of individuals whose monthly income falls between the food
+poverty line and the lower-bound poverty line (R785). The lower bound
+poverty line is the sum of the food poverty line and and minimum amount
+for non-food items. The third group consist of individuals between the
+lower-bound poverty line and the upper-bound poverty line (R1183). The
+final group consist of individuals whose monthly income is above the
+upper-bound poverty line, which I refer to as non-vulnerable
+individuals. Figure 1 graphically displays the process described above
+in the format of a decision tree, where 1 represents the food poverty
+line, 2 the lower-bound poverty line, 3 the upper-bound poverty line and
+4 the non-vulnerable.
 
 \begin{figure}[H]
 
@@ -305,46 +341,88 @@ consistency. I suggest keeping all your data in a data folder.
 
 }
 
-\caption{Caption Here \label{Figure1}}\label{fig:Figure1}
+\caption{Decision tree for poverty levels \label{Figure1}}\label{fig:Figure1}
 \end{figure}
 
-To make your graphs look extra nice in latex world, you could use Tikz
-device. Replace dev - `png' with `tikz' in the chunk below. Notice this
-makes the build time longer and produces extra tex files - so if you are
-comfortable with this, set your device to Tikz and try it out:
+After all data cleaning was done, 73 percent of households were
+non-vulnerable, 11 percent were between the upper and lower-bound
+poverty line, 6 percent between the lower and food poverty line, and 9
+percent fell below the food poverty line. To evaluate the performance
+for the machine learning techniques that I will implement, I randomly
+split the data into two subsets using a 70:30 ratio. The training
+dataset will consist of 70 percent of the original dataset, while the
+test dataset will consist of the remaining 30 percent. Figure 2 below
+shows the number of household per poverty level for the training
+dataset.
+
+\begin{figure}
+\centerline{\includegraphics[scale=0.65]{plot1.png}}
+\caption{Number of household per poverty level}
+\end{figure}
+
+Figure 2 shows that in our training dataset, 73.5 percent of households
+are non-vulnerable and 9.6 percent of households monthly income falls
+below the food poverty line. This implies that I have an extremely
+imbalanced dataset. This is important as it will have an effect on the
+machine learning techniques that I implement later on.
+
+For some descriptive statistics, I analyze some of the variable in more
+details. From the density plots in figure 3.3, I can see that households
+whose average income per person falls below the upper-bound poverty line
+(green line) tend to have slightly older head of household (head\_age)
+then those household belonging to other poverty levels.
+
+A household size (hholdsz) of 1-2 individuals tend have a larger
+probability to be non-vulnerable (yellow line), where larger household
+size of 3-5 individuals then have a larger probability of falling below
+the food poverty line.
+
+Total expenditure (Q814Exp) is higher for the non-vulnerable households,
+which makes sense as they receive a higher income.
+
+The total number of rooms (Q55TotRm) seem to be distributed similarly,
+with non-vulnerable households having a slightly smaller distribution.
+This comes as no suprise as these non-vulnerable households tend to have
+a smaller household size, implying that they need less bedrooms.
+
+Non-vulnerable household also have much larger property valuation
+(Q58Val), which could imply that they have a higher standard of living.
 
 \begin{figure}[H]
 
-{\centering \includegraphics{Predicting-Poverty_files/figure-latex/Figure2-1} 
+{\centering \includegraphics{Predicting-Poverty_files/figure-latex/Figure3-1} 
 
 }
 
-\caption{Caption Here \label{Figure2}}\label{fig:Figure2}
+\caption{Distribution of certain variables by poverty level \label{Figure3}}\label{fig:Figure3}
 \end{figure}
 
-To reference the plot above, add a ``\textbackslash label'\,' after the
-caption in the chunk heading, as done above. Then reference the plot as
-such: As can be seen, Figures \ref{Figure1} and \ref{Figure2} are
-excellent, with Figure \ref{Figure2} being particularly aesthetically
-pleasing due to its device setting of Tikz. The nice thing now is that
-it correctly numbers all your figures (and sections or tables) and will
-update if it moves. The links are also dynamic.
+Before we start building models we can also analysis which variables are
+correlated with our dependent variable (which is is poverty level).
+Figure 3.4 displays the top 10 variables that are correlated with the
+dependent variable. Our top four that are positively correlated are
+\textit{econact hh}, which is a binary variable indicating whether or
+not the household is economically active, \emph{Q814Exp}, which is a
+numeric variable display total household expenditure, \emph{totmhinc},
+which is a numeric variable displaying total household income, and
+\emph{Q89aGrant}, which is a binary variable indicating whether the
+household receives a grant or not.
 
-I very strongly suggest using ggplot2 (ideally in combination with
-dplyr) using the ggtheme package to change the themes of your figures.
+variables that are negatively correlated with the dependent variable is
+the sex of the head of the household (\emph{head sex}), whether or not
+the household owns a washing machine (\emph{Q821WashM}), the household
+size (\emph{hholdsz}), the amount spent on rent or mortgage of property
+per month (\emph{Q57Rent}) and the number of adults in the household
+(\emph{adults}).
 
-Also note the information that I have placed above the chunks in the
-code chunks for the figures. You can edit any of these easily - visit
-the Rmarkdown webpage for more information.
+\begin{figure}[H]
 
-\hypertarget{splitting-a-page}{%
-\section{Splitting a page}\label{splitting-a-page}}
+{\centering \includegraphics{Predicting-Poverty_files/figure-latex/Figure4-1} 
 
-You can also very easily split a page using built-in Pandoc formatting.
-I comment this out in the code (as this has caused issues building the
-pdf for some users - which I presume to be a Pandoc issue), but you are
-welcome to try it out yourself by commenting out the following section
-in your Rmd file.
+}
+
+\caption{Correlation with dependent variable \label{Figure4}}\label{fig:Figure4}
+\end{figure}
 
 \hypertarget{methodology}{%
 \section{\texorpdfstring{Methodology
@@ -651,9 +729,9 @@ I hope you find this template useful. Remember, stackoverflow is your
 friend - use it to find answers to questions. Feel free to write me a
 mail if you have any questions regarding the use of this package. To
 cite this package, simply type citation(``Texevier'') in Rstudio to get
-the citation for \protect\hyperlink{ref-Texevier}{Katzke}
-(\protect\hyperlink{ref-Texevier}{2017}) (Note that uncited references
-in your bibtex file will not be included in References).
+the citation for (\protect\hyperlink{ref-Texevier}{\textbf{Texevier?}})
+(Note that uncited references in your bibtex file will not be included
+in References).
 
 \newpage
 
@@ -663,17 +741,18 @@ in your bibtex file will not be included in References).
 
 \hypertarget{refs}{}
 \begin{CSLReferences}{1}{0}
-\leavevmode\hypertarget{ref-fama1997}{}%
-Fama, E.F. \& French, K.R. 1997. Industry costs of equity. \emph{Journal
-of financial economics}. 43(2):153--193.
+\leavevmode\hypertarget{ref-leibbrandt2010trends}{}%
+Leibbrandt, M., Woolard, I., Finn, A. \& Argent, J. 2010. Trends in
+south african income distribution and poverty since the fall of
+apartheid.
 
-\leavevmode\hypertarget{ref-grinold2000}{}%
-Grinold, R.C. \& Kahn, R.N. 2000. Active portfolio management.
+\leavevmode\hypertarget{ref-stats2011social}{}%
+Stats, S. 2011. Social profile of vulnerable groups in south africa
+2002-2010. \emph{Pretoria: Government Printer}.
 
-\leavevmode\hypertarget{ref-Texevier}{}%
-Katzke, N.F. 2017. \emph{{Texevier}: {P}ackage to create elsevier
-templates for rmarkdown}. Stellenbosch, South Africa: Bureau for
-Economic Research.
+\leavevmode\hypertarget{ref-vanderberg2017}{}%
+Yu, D. \& Van der Berg, S. 2017. South african poverty: The current
+situation and trends since the transition to democracy.
 
 \end{CSLReferences}
 

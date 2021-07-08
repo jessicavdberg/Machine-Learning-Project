@@ -1,0 +1,437 @@
+---
+# IMPORTANT: Change settings here, but DO NOT change the spacing.
+# Remove comments and add values where applicable.
+# The descriptions below should be self-explanatory
+
+title: "Predicting Poverty levels in South Africa"
+#subtitle: "This will appear as Right Header"
+
+documentclass: "elsarticle"
+
+# --------- Thesis title (Optional - set to FALSE by default).
+# You can move the details below around as you please.
+Thesis_FP: FALSE
+# Entry1: "An unbelievable study with a title spanning multiple lines."
+# Entry2: "\\textbf{Nico Katzke}" # textbf for bold
+# Entry3: "A thesis submitted toward the degree of Doctor of Philosophy"
+# Uni_Logo: Tex/Logo.png # Place a logo in the indicated location (from your root, e.g. defaults to ~/Tex/Logo.png) and uncomment this line. Leave uncommented for no image
+# Logo_width: 0.3 # If using a logo - use this to set width (size) of image
+# Entry4: "Under the supervision of: \\vfill Prof. Joe Smith and Dr. Frank Smith"
+# Entry5: "Stellenbosch University"
+# Entry6: April 2020
+# Entry7:
+# Entry8:
+
+# --------- Front Page
+# Comment: ----- Follow this pattern for up to 5 authors
+AddTitle: TRUE # Use FALSE when submitting to peer reviewed platform. This will remove author names.
+Author1: "Jessica van der Berg "  # First Author - note the thanks message displayed as an italic footnote of first page.
+Ref1: "Stellenbosch University, South Africa" # First Author's Affiliation
+Email1: "20190565\\@sun.ac.za" # First Author's Email address
+
+
+CorrespAuthor_1: FALSE  # If corresponding author is author 3, e.g., use CorrespAuthor_3: TRUE
+
+keywords: "Multivariate GARCH \\sep Kalman Filter \\sep Copula" # Use \\sep to separate
+JELCodes: "L250 \\sep L100"
+
+# ----- Manage headers and footers:
+#BottomLFooter: $Title$
+#BottomCFooter:
+#TopLHeader: \leftmark # Adds section name at topleft. Remove comment to add it.
+BottomRFooter: "\\footnotesize Page \\thepage" # Add a '#' before this line to remove footer.
+addtoprule: TRUE
+addfootrule: TRUE               # Use if footers added. Add '#' to remove line.
+
+# --------- page margins:
+margin: 2.3 # Sides
+bottom: 2 # bottom
+top: 2.5 # Top
+HardSet_layout: TRUE # Hard-set the spacing of words in your document. This will stop LaTeX squashing text to fit on pages, e.g.
+# This is done by hard-setting the spacing dimensions. Set to FALSE if you want LaTeX to optimize this for your paper.
+
+# --------- Line numbers
+linenumbers: FALSE # Used when submitting to journal
+
+# ---------- References settings:
+# You can download cls format here: https://www.zotero.org/ - simply search for your institution. You can also edit and save cls formats here: https://editor.citationstyles.org/about/
+# Hit download, store it in Tex/ folder, and change reference below - easy.
+bibliography: Tex/ref.bib       # Do not edit: Keep this naming convention and location.
+csl: Tex/harvard-stellenbosch-university.csl # referencing format used.
+# By default, the bibliography only displays the cited references. If you want to change this, you can comment out one of the following:
+#nocite: '@*' # Add all items in bibliography, whether cited or not
+# nocite: |  # add specific references that aren't cited
+#  @grinold2000
+#  @Someoneelse2010
+
+# ---------- General:
+RemovePreprintSubmittedTo: TRUE  # Removes the 'preprint submitted to...' at bottom of titlepage
+Journal: "Journal of Finance"   # Journal that the paper will be submitting to, if RemovePreprintSubmittedTo is set to TRUE.
+toc: FALSE                       # Add a table of contents
+numbersections: TRUE             # Should sections (and thus figures and tables) be numbered?
+fontsize: 11pt                  # Set fontsize
+linestretch: 1.2                # Set distance between lines.
+link-citations: TRUE            # This creates dynamic links to the papers in reference list.
+
+### Adding additional latex packages:
+# header-includes:
+#    - \usepackage{colortbl} # Add additional packages here.
+
+output:
+  pdf_document:
+    keep_tex: TRUE
+    template: Tex/TexDefault.txt
+    fig_width: 3.5 # Adjust default figure sizes. This can also be done in the chunks of the text.
+    fig_height: 3.5
+abstract: |
+  Abstract to be written here. The abstract should not be too long and should provide the reader with a good understanding what you are writing about. Academic papers are not like novels where you keep the reader in suspense. To be effective in getting others to read your paper, be as open and concise about your findings here as possible. Ideally, upon reading your abstract, the reader should feel he / she must read your paper in entirety.
+---
+
+<!-- First: Set your default preferences for chunk options: -->
+
+<!-- If you want a chunk's code to be printed, set echo = TRUE. message = FALSE stops R printing ugly package loading details in your final paper too. I also suggest setting warning = FALSE and checking for warnings in R, else you might find ugly warnings in your paper. -->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width = 6, fig.height = 5, fig.pos="H", fig.pos = 'H')
+# Note: Include = FALSE implies the code is executed, but not printed in your pdf.
+# warning and message = FALSE implies ugly messages and warnings are removed from your pdf.
+# These should be picked up when you execute the command chunks (code sections below) in your rmd, not printed in your paper!
+
+# Lets load in example data, and see how this can be stored and later called from your 'data' folder.
+if(!require("tidyverse")) install.packages("tidyverse")
+library(tidyverse)
+library(caTools)
+library(dplyr)
+library(gridExtra)
+library(kableExtra)
+library(tidyverse)
+library(caret)
+library(grid)
+library(lares)
+library(rpart)
+library(rpart.plot)
+library(e1071)
+
+house <- read.csv("C:/Users/jesic/OneDrive/Desktop/ghs-2018-house-1.0-csv.csv")
+house.simple <-  select(house, head_popgrp, head_sex, head_age, Q55Bedr, Q55TotRm, Q57Rent, Q58Val, Q63NrCell, Q814Exp, Q89aGrant, Q821WashM, hholdsz, chld17yr_hh, Q42Msal_hh, totmhinc, econact_hh)
+
+#add column. We are making the pp person income using the total monthly income and minus the child17 years an
+house.simple$adults <- house.simple$hholdsz - house.simple$chld17yr_hh
+house.simple$income_pp <- house.simple$totmhinc / house.simple$adults
+
+# getting rid of all NA and households that did not answer certain questions or who ticked unsure. 
+house.simple <- filter(house.simple, Q55Bedr < 99, Q55TotRm < 25, Q814Exp < 11, hholdsz < 15, Q58Val < 9, Q63NrCell < 11, income_pp < 50000, Q821WashM <9)
+
+## Add column
+# We will define a household under these
+# 1 - extreme poverty - Food poverty line ( <=547)
+# 2 - moderate poverty - lower poverty line (<=785)
+# 3 - vulnerable - upper bound poverty line (<= 1183)
+# 4 - non-vulnerable - the rest of the people (rest)
+
+house.simple$poverty_level <- ifelse(house.simple$income_pp <= 547, 1, ifelse(house.simple$income_pp > 547 & house.simple$income_pp <=785,2,ifelse(house.simple$income_pp > 785 & house.simple$income_pp <=1183,3,4)))
+
+## Need to split data into testing and training data
+# here randomly selects 70 % of the rows from the dataset
+# 70% is split into the training one, where 30% of same is in the test dataset
+
+##SET SEED HERE 
+set.seed(555)
+dt <- sort(sample(nrow(house.simple), nrow(house.simple)*.7))
+train <- house.simple[dt,]
+test <- house.simple[-dt,]
+
+
+```
+
+
+<!-- ############################## -->
+<!-- # Start Writing here: -->
+<!-- ############################## -->
+
+# Introduction \label{Introduction}
+
+Since apartheid ended in 1994, the South African Government has committed a significant number of resources to distribute grants effectively and efficiently to the poor and the vulnerable. However, South Africa has remained a country with extremely high levels of inequality and poverty for an upper middle-income country @stats2011social. Previous literature has shown that poverty levels are higher in rural areas than in urban areas. This is largely due to rural household not having access to the same employment opportunities has urban households. South Africa is a country with high levels of unemployment and extremely low wages. This implies that individuals that are economically active can still fall below the upper or lower bound poverty line due to the low wages that they receive @leibbrandt2010trends. 
+
+Poverty remains unacceptably high for a country of South Africa’s economic status and remains closely associated with race.  Thus, poverty reduction remains one of the key economic goals. Poverty in money terms has declined markedly since apartheid ended in 1994. This was made possible by the expansion of the social grant system. However, accurately targeting social welfare programs can be challenging given that income data is often incorrect @vanderberg2017. To overcome this problem, households are subject to a proxy means test (PMT) to identify whether a household qualifies for social assistant.  This essay will try to identify new methods to identify households that are below the food poverty line, lower-bound poverty line and upper bound poverty line using machine learning techniques. 
+
+Structure … `
+
+# Literature Review 
+
+Write a short literature review here on the background of SOuth Africa - max one page 
+
+# Data 
+
+The data used for predicting poverty level was exacted from the General Household Survey (GHS) 2018, which is a survey completed annually by Statistics SA to measure the living circumstances of households in South Africa. They survey includes household and individual characteristics. After taking out all of the NA values and taking out households who did not know or answer the relevant questions, the dataset consists of 14 546 entries. 
+
+Since the GHS consist of household survey, total income per household is reported. To calculate the average monthly income per individual within each household, I first need to calculate the total number of adults within each household. This is done by taking the difference between household size and the number of children under the age of 17. I then take the total monthly income and divide it by the total number of adults to get the average monthly income per individual in each household. This income information is then used to divided the data into four groups. 
+
+The first group is individuals whose income fall below the food poverty line. In 2018, the food poverty line was R547 per month. The food poverty line is also referred to as the extreme poverty line as it refers to the absolute minimum amount an individual will need to be able to afford the minimum energy intake for survival. The second group consist of individuals whose monthly income falls between the food poverty line and the lower-bound poverty line (R785). The lower bound poverty line is the sum of the food poverty line and and minimum amount for non-food items. The third group consist of individuals between the lower-bound poverty line and the upper-bound poverty line (R1183). The final group consist of individuals whose monthly income is above the upper-bound poverty line, which I refer to as non-vulnerable individuals.  Figure 1 graphically displays the process described above in the format of a decision tree, where 1 represents the food poverty line, 2 the lower-bound poverty line, 3 the upper-bound poverty line and 4 the non-vulnerable. 
+
+
+```{r Figure1,  warning =  FALSE, fig.align = 'center', fig.cap = "Decision tree for poverty levels \\label{Figure1}", fig.ext = 'png', fig.height = 3, fig.width = 6}
+
+fit <- rpart(poverty_level~., data = house.simple, method = 'class')
+rpart.plot(fit, extra = 106)
+  
+```
+
+After all data cleaning was done, 73 percent of households were non-vulnerable, 11 percent were between the upper and lower-bound poverty line, 6 percent between the lower and food poverty line, and 9 percent fell below the food poverty line. To evaluate the performance for the machine learning techniques that I will implement, I randomly split the data into two subsets using a 70:30 ratio. The training dataset will consist of 70 percent of the original dataset, while the test dataset will consist of the remaining 30 percent. Figure 2 below shows the number of household per poverty level for the training dataset. 
+
+
+\begin{figure}
+\centerline{\includegraphics[scale=0.65]{plot1.png}}
+\caption{Number of household per poverty level}
+\end{figure}
+
+```{r}
+
+plot1 <- train %>%
+    ggplot(aes(as.numeric(poverty_level))) +
+    geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat = "count", show.legend = TRUE) +
+    geom_text(aes(label = scales::percent(..prop..), y = ..prop..), stat = "count", vjust = -.5, size = 3) +
+    scale_y_continuous(labels = scales::percent) +
+    labs(title = "Poverty levels ", subtitle= " Number of household below a given poverty level", caption = "Own calculations using training dataset") +
+    ggthemes::theme_economist_white()+
+    theme(axis.text.y = element_blank(), axis.title.y = element_blank(), axis.title.x = element_blank()) +
+    scale_fill_viridis_d(name="Poverty levels:",
+                         breaks=c("1", "2", "3", "4"),
+                         labels=c("1 = Food poverty line", "2 = Lower bound poverty line", "3 = Upper bound poverty line", "4 = non-poor"))
+
+
+
+```
+Figure 2 shows that in our training dataset, 73.5 percent of households are non-vulnerable and 9.6 percent of households monthly income falls below the food poverty line. This implies that I have an extremely imbalanced dataset. This is important as it will have an effect on the machine learning techniques that I implement later on. 
+
+For some descriptive statistics, I analyze some of the variable in more details. From the density plots in figure 3.3, I can see that households whose average income per person falls below the upper-bound poverty line (green line) tend to have slightly older head of household (head_age) then those household belonging to other poverty levels. 
+
+A household size (hholdsz) of 1-2 individuals tend have a larger probability to be non-vulnerable (yellow line), where larger household size of 3-5 individuals then have a larger probability of falling below the food poverty line. 
+
+Total expenditure (Q814Exp) is higher for the non-vulnerable households, which makes sense as they receive a higher income. 
+
+The total number of rooms (Q55TotRm) seem to be distributed similarly, with non-vulnerable households having a slightly smaller distribution. This comes as no suprise as these non-vulnerable households tend to have a smaller household size, implying that they need less bedrooms. 
+
+Non-vulnerable household also have much larger property valuation (Q58Val), which could imply that they have a higher standard of living. 
+
+```{r Figure3,  warning =  FALSE, fig.align = 'center', fig.cap = "Distribution of certain variables by poverty level \\label{Figure3}", fig.ext = 'png', fig.height = 3, fig.width = 6}
+plot_target_by_var <- function(df, variable){
+    var <- enquo(variable)
+    df %>%
+        ggplot(aes(!!var, fill = as.factor(poverty_level), color = as.factor(poverty_level))) +
+        geom_density(alpha = 0.1, size = 1, show.legend = FALSE) +
+        scale_colour_viridis_d() +
+        theme_minimal()
+}
+
+
+p_age <- plot_target_by_var(train, head_age)
+p_size <- plot_target_by_var(train, hholdsz)
+p_hhexp <- plot_target_by_var(train, Q814Exp)
+p_cellphone <- plot_target_by_var(train, Q63NrCell)
+p_room <- plot_target_by_var(train, Q55TotRm)
+p_val <- plot_target_by_var(train, Q58Val)
+#display plots in a grid
+grid.arrange(p_age, p_size, p_hhexp, p_cellphone, p_room , p_val, nrow = 2, top = textGrob("Distribution by poverty levels", gp=gpar(fontsize=15)))
+
+```
+
+Before we start building models we can also analysis which variables are correlated with our dependent variable (which is is poverty level). Figure 3.4 displays the top 10 variables that are correlated with the dependent variable. Our top four that are positively correlated are \textit{econact hh}, which is a binary variable indicating whether or not the household is economically active, \emph{Q814Exp}, which is a numeric variable display total household expenditure, \emph{totmhinc}, which is a numeric variable displaying total household income, and \emph{Q89aGrant}, which is a binary variable indicating whether the household receives a grant or not. 
+
+variables that are negatively correlated with the dependent variable is the sex of the head of the household (\emph{head sex}), whether or not the household owns a washing machine (\emph{Q821WashM}), the household size (\emph{hholdsz}), the amount spent on rent or mortgage of property per month (\emph{Q57Rent}) and the number of adults in the household (\emph{adults}). 
+
+```{r Figure4,  warning =  FALSE, fig.align = 'center', fig.cap = "Correlation with dependent variable \\label{Figure4}", fig.ext = 'png', fig.height = 4, fig.width = 5}
+
+a <- train[,-18] # get rid of income_pp
+b <- a[,-14] # get rid of monthly salary
+corr_var(b, poverty_level, top=10)
+
+```
+
+
+
+
+
+
+#  Methodology \label{Meth}
+
+## Subsection
+Ideally do not overuse subsections. It equates to bad writing.^[This is an example of a footnote by the way. Something that should also not be overused.]
+
+## Math section
+
+Equations should be written as such:
+
+\begin{align}
+\beta = \sum_{i = 1}^{\infty}\frac{\alpha^2}{\sigma_{t-1}^2} \label{eq1} \\
+\int_{x = 1}^{\infty}x_{i} = 1 \notag
+\end{align}
+
+If you would like to see the equations as you type in Rmarkdown, use $ symbols instead (see this for yourself by adjusted the equation):
+
+$$
+\beta = \sum_{i = 1}^{\infty}\frac{\alpha^2}{\sigma_{t-1}^2} \\
+\int_{x = 1}^{\infty}x_{i} = 1
+$$
+
+Note again the reference to equation \ref{eq1}. Writing nice math requires practice. Note I used a forward slashes to make a space in the equations. I can also align equations using  __\&__, and set to numbering only the first line. Now I will have to type ``begin equation'' which is a native \LaTeX command. Here follows a more complicated equation:
+
+
+\begin{align}
+	y_t &= c + B(L) y_{t-1} + e_t   \label{eq2}    \\ \notag
+	e_t &= H_t^{1/2}  z_t ; \quad z_t \sim  N(0,I_N) \quad \& \quad H_t = D_tR_tD_t \\ \notag
+		D_t^2 &= {\sigma_{1,t}, \dots, \sigma_{N,t}}   \\ \notag
+		\sigma_{i,t}^2 &= \gamma_i+\kappa_{i,t}  v_{i, t-1}^2 +\eta_i  \sigma_{i, t-1}^2, \quad \forall i \\ \notag
+		R_{t, i, j} &= {diag(Q_{t, i, j}}^{-1}) . Q_{t, i, j} . diag(Q_{t, i, j}^{-1})  \\ \notag
+		Q_{t, i, j} &= (1-\alpha-\beta)  \bar{Q} + \alpha  z_t  z_t'  + \beta  Q_{t, i, j} \notag
+\end{align}
+
+Note that in \ref{eq2} I have aligned the equations by the equal signs. I also want only one tag, and I create spaces using ``quads''.
+
+See if you can figure out how to do complex math using the two examples provided in \ref{eq1} and \ref{eq2}.
+
+<!-- $$ -->
+<!-- This is a commented out section in the writing part. -->
+<!-- Comments are created by highlighting text, amnd pressing CTL+C -->
+<!-- \\begin{align} -->
+<!-- \\beta = \\alpha^2 -->
+<!-- \end{align} -->
+<!-- $$ -->
+
+# Results
+
+Tables can be included as follows. Use the _xtable_ (or kable) package for tables. Table placement = H implies Latex tries to place the table Here, and not on a new page (there are, however, very many ways to skin this cat. Luckily there are many forums online!).
+
+
+```{r ShortTable, results = 'asis'}
+
+library(xtable)
+data <- mtcars[1:5,] %>% tibble::as_tibble()
+
+table <- xtable(data, caption = "Short Table Example \\label{tab1}")
+  print.xtable(table,
+             # tabular.environment = "longtable",
+             floating = TRUE,
+             table.placement = 'H',
+             # scalebox = 0.3,
+             comment = FALSE,
+             caption.placement = 'bottom'
+             )
+
+```
+
+To reference calculations __in text__, _do this:_ From table \ref{tab1} we see the average value of mpg is `r mean(mtcars[1:5,]$mpg)`.
+
+Including tables that span across pages, use the following (note that I add below the table: ``continue on the next page''). This is a neat way of splitting your table across a page.
+
+Use the following default settings to build your own possibly long tables. Note that the following will fit on one page if it can, but cleanly spreads over multiple pages:
+
+```{r LongTable, results = 'asis'}
+
+library(xtable)
+
+data = mtcars %>% tibble::as_tibble()
+  addtorow          <- list()
+  addtorow$pos      <- list()
+  addtorow$pos[[1]] <- c(0)
+  addtorow$command  <- c(paste("\\hline \n",
+                               "\\endhead \n",
+                               "\\hline \n",
+                               "{\\footnotesize Continued on next page} \n",
+                               "\\endfoot \n",
+                               "\\endlastfoot \n",sep=""))
+table <- xtable(data, caption = "Long Table Example")
+  print.xtable(table,
+             tabular.environment = "longtable",
+             floating = FALSE, # Leave this as is.
+             table.placement = 'H', # Leave this as is.
+             booktabs = T, # Aesthetics
+             include.rownames = FALSE,  # Typically you don't want this in a table.
+             add.to.row = addtorow, # For adding the Continued on next page part...
+             comment = FALSE,
+             caption.placement = 'top',  # Where do you want the caption?
+             size="\\fontsize{12pt}{13pt}\\selectfont"  # Size of text in table..
+             )
+# See https://cran.r-project.org/web/packages/xtable/vignettes/xtableGallery.pdf for table inspiration
+```
+
+\hfill
+
+<!-- hfill can be used to create a space, like here between text and table. -->
+
+
+## Huxtable
+
+Huxtable is a very nice package for making working with tables between Rmarkdown and Tex easier.
+
+This cost some adjustment to the Tex templates to make it work, but it now works nicely.
+
+See documentation for this package [here](https://hughjonesd.github.io/huxtable/huxtable.html). A particularly nice addition of this package is for making the printing of regression results a joy (see [here](https://hughjonesd.github.io/huxtable/huxtable.html#creating-a-regression-table)). Here follows an example:
+
+
+If you are eager to use huxtable, comment out the Huxtable table in the Rmd template, and uncomment the colortbl package in your Rmd's root.
+
+Note that I do not include this in the ordinary template, as some latex users have complained it breaks when they build their Rmds (especially those using tidytex - I don't have this problem as I have the full Miktex installed on mine). Up to you, but I strongly recommend installing the package manually and using huxtable. To make this work, uncomment the _Adding additional latex packages_ part in yaml at the top of the Rmd file. Then comment out the huxtable example in the template below this line. Reknit, and enjoy.
+
+```{r, results = 'asis'}
+
+if(!require(huxtable)) install.packages(huxtable)
+library(huxtable)
+data(diamonds, package = 'ggplot2')
+Title <- "Regression Output"
+Label <- "Reg01"
+lm1 <- lm(price ~ carat, diamonds)
+lm2 <- lm(price ~ depth, diamonds)
+lm3 <- lm(price ~ carat + depth, diamonds)
+htab <-
+huxreg(lm1, lm2, lm3,
+                statistics = c(N = "nobs", R2 = "r.squared"),
+                note = "%stars%.") %>%
+  set_caption(Title) %>%
+  set_label(Label)
+# More settings:
+font_size(htab) <- 12
+# Let's change regression names: this is slightly hacky, but works. Comment out this section to see what the default looks like:
+  Names <- c( "Reg1", "Reg2", "Reg3")
+  for(i in 1:length(Names)) {
+    htab[1,][[1+i]] <- Names[i]
+  }
+# Now simply call the table:
+htab
+
+```
+
+FYI - R also recently introduced the gt package, which is worthwhile exploring too.
+
+# Lists
+
+To add lists, simply using the following notation
+
+* This is really simple
+
+    + Just note the spaces here - writing in R you have to sometimes be pedantic about spaces...
+
+* Note that Rmarkdown notation removes the pain of defining \LaTeX environments!
+
+# Conclusion
+
+I hope you find this template useful. Remember, stackoverflow is your friend - use it to find answers to questions. Feel free to write me a mail if you have any questions regarding the use of this package. To cite this package, simply type citation("Texevier") in Rstudio to get the citation for @Texevier (Note that uncited references in your bibtex file will not be included in References).
+
+<!-- Make title of bibliography here: -->
+<!-- \newpage -->
+
+\newpage
+
+# References {-}
+
+<div id="refs"></div>
+
+
+# Appendix {-}
+
+## Appendix A {-}
+
+Some appendix information here
+
+## Appendix B {-}
+
