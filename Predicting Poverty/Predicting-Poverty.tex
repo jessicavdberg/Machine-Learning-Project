@@ -149,14 +149,6 @@
 \usepackage[normalem]{ulem}
 \usepackage{makecell}
 \usepackage{xcolor}
-\usepackage{caption}
-\usepackage{graphicx}
-\usepackage{siunitx}
-\usepackage{hhline}
-\usepackage{calc}
-\usepackage{tabularx}
-\usepackage{adjustbox}
-\usepackage{hyperref}
 
 %%% Hard setting column skips for reports - this ensures greater consistency and control over the length settings in the document.
 %% page layout
@@ -428,310 +420,140 @@ per month (\emph{Q57Rent}) and the number of adults in the household
 \section{\texorpdfstring{Methodology
 \label{Meth}}{Methodology }}\label{methodology}}
 
-\hypertarget{subsection}{%
-\subsection{Subsection}\label{subsection}}
+\hypertarget{analysing-classification-models}{%
+\subsection{Analysing Classification
+Models}\label{analysing-classification-models}}
 
-Ideally do not overuse subsections. It equates to bad
-writing.\footnote{This is an example of a footnote by the way. Something
-  that should also not be overused.}
+To see which model predicts poverty most accurately and efficiently, I
+assess the performance of x supervised classification models using the
+caret package. The dataset is extremely unbalanced; therefore, the
+defaults parameter will be Kappa to order to improve the performance of
+the models. The Kappa metric compares the observed accuracy with the
+expected accuracy. It also accounts for random chance which implies that
+it makes the model more accurate that simply using an Accuracy as a
+metric. The Kappa matric is calculated using the formula;
+\[k = \frac{p_0 -p_e}{1-p_e}\] Where \(p_0\) represents the overall
+accuracy of the model and \(p_e\) represents that measure of the
+agreement between the predictions and actual class value of the model.
+Therefore, Kappa attempts to account for evaluation bias by considering
+the correct classification by a random guess.
 
-\hypertarget{math-section}{%
-\subsection{Math section}\label{math-section}}
+The table below briefly discusses the seven different classification
+models that I compared to determine which model is the most accurate to
+predict poverty \protect\hyperlink{ref-boehmke2019hands}{Boehmke \&
+Greenwell} (\protect\hyperlink{ref-boehmke2019hands}{2019}).
 
-Equations should be written as such:
-
-\begin{align}
-\beta = \sum_{i = 1}^{\infty}\frac{\alpha^2}{\sigma_{t-1}^2} \label{eq1} \\
-\int_{x = 1}^{\infty}x_{i} = 1 \notag
-\end{align}
-
-If you would like to see the equations as you type in Rmarkdown, use \$
-symbols instead (see this for yourself by adjusted the equation):
-
-\[
-\beta = \sum_{i = 1}^{\infty}\frac{\alpha^2}{\sigma_{t-1}^2} \\
-\int_{x = 1}^{\infty}x_{i} = 1
-\]
-
-Note again the reference to equation \ref{eq1}. Writing nice math
-requires practice. Note I used a forward slashes to make a space in the
-equations. I can also align equations using \textbf{\&}, and set to
-numbering only the first line. Now I will have to type ``begin
-equation'\,' which is a native \LaTeX command. Here follows a more
-complicated equation:
-
-\begin{align}
-    y_t &= c + B(L) y_{t-1} + e_t   \label{eq2}    \\ \notag
-    e_t &= H_t^{1/2}  z_t ; \quad z_t \sim  N(0,I_N) \quad \& \quad H_t = D_tR_tD_t \\ \notag
-        D_t^2 &= {\sigma_{1,t}, \dots, \sigma_{N,t}}   \\ \notag
-        \sigma_{i,t}^2 &= \gamma_i+\kappa_{i,t}  v_{i, t-1}^2 +\eta_i  \sigma_{i, t-1}^2, \quad \forall i \\ \notag
-        R_{t, i, j} &= {diag(Q_{t, i, j}}^{-1}) . Q_{t, i, j} . diag(Q_{t, i, j}^{-1})  \\ \notag
-        Q_{t, i, j} &= (1-\alpha-\beta)  \bar{Q} + \alpha  z_t  z_t'  + \beta  Q_{t, i, j} \notag
-\end{align}
-
-Note that in \ref{eq2} I have aligned the equations by the equal signs.
-I also want only one tag, and I create spaces using ``quads'\,'.
-
-See if you can figure out how to do complex math using the two examples
-provided in \ref{eq1} and \ref{eq2}.
-
-\hypertarget{results}{%
-\section{Results}\label{results}}
-
-Tables can be included as follows. Use the \emph{xtable} (or kable)
-package for tables. Table placement = H implies Latex tries to place the
-table Here, and not on a new page (there are, however, very many ways to
-skin this cat. Luckily there are many forums online!).
-
-\begin{table}[H]
-\centering
-\begin{tabular}{rrrrrrrrrrrr}
-  \hline
- & mpg & cyl & disp & hp & drat & wt & qsec & vs & am & gear & carb \\ 
-  \hline
-1 & 21.00 & 6.00 & 160.00 & 110.00 & 3.90 & 2.62 & 16.46 & 0.00 & 1.00 & 4.00 & 4.00 \\ 
-  2 & 21.00 & 6.00 & 160.00 & 110.00 & 3.90 & 2.88 & 17.02 & 0.00 & 1.00 & 4.00 & 4.00 \\ 
-  3 & 22.80 & 4.00 & 108.00 & 93.00 & 3.85 & 2.32 & 18.61 & 1.00 & 1.00 & 4.00 & 1.00 \\ 
-  4 & 21.40 & 6.00 & 258.00 & 110.00 & 3.08 & 3.21 & 19.44 & 1.00 & 0.00 & 3.00 & 1.00 \\ 
-  5 & 18.70 & 8.00 & 360.00 & 175.00 & 3.15 & 3.44 & 17.02 & 0.00 & 0.00 & 3.00 & 2.00 \\ 
-   \hline
-\end{tabular}
-\caption{Short Table Example \label{tab1}} 
-\end{table}
-
-To reference calculations \textbf{in text}, \emph{do this:} From table
-\ref{tab1} we see the average value of mpg is 20.98.
-
-Including tables that span across pages, use the following (note that I
-add below the table: ``continue on the next page'\,'). This is a neat
-way of splitting your table across a page.
-
-Use the following default settings to build your own possibly long
-tables. Note that the following will fit on one page if it can, but
-cleanly spreads over multiple pages:
-
-\begingroup\fontsize{12pt}{13pt}\selectfont
-\begin{longtable}{rrrrrrrrrrr}
-\caption{Long Table Example} \\ 
-  \toprule
-mpg & cyl & disp & hp & drat & wt & qsec & vs & am & gear & carb \\ 
-  \hline 
-\endhead 
+\begin{center}
+\begin{tabular}{| m{10em} | m{2cm}| m{10cm} |}
+\hline
+\textbf{Model} & \textbf{Reference Name} & \textbf{Description} \\
+\hline
+Multinomial Logistic Regression &  multinom & Makes use of the maximum likelihood estimation to evaluate the probability of a categorical relationship \\
+\hline
+Linear Discriminant Analysis & lda & Used to find linear combinations of separates multiple classes of features, representing the dependent variable as a linear combination of other features \\
+\hline
+Naive Bayes & naive bayes & Using Bayes Theorem, this model applies posterior probability to the categorization, making the uneducated assumption that the predictors are independent \\
+\hline
+Linear Support Vector Machine & svmLinear & The model creates a line that separates data into classes \\
+\hline
+K-Nearest Neighbor & knn & Each observation in the dataset is predicted based on its similarity to other observations \\
+\hline
+Recursive Partitioning & rpart & Builds models using a general structure which consist of a two-stage procedure and then final presenting the model as a binary tree \\
 \hline 
-{\footnotesize Continued on next page} 
-\endfoot 
-\endlastfoot 
- \midrule
-21.00 & 6.00 & 160.00 & 110.00 & 3.90 & 2.62 & 16.46 & 0.00 & 1.00 & 4.00 & 4.00 \\ 
-  21.00 & 6.00 & 160.00 & 110.00 & 3.90 & 2.88 & 17.02 & 0.00 & 1.00 & 4.00 & 4.00 \\ 
-  22.80 & 4.00 & 108.00 & 93.00 & 3.85 & 2.32 & 18.61 & 1.00 & 1.00 & 4.00 & 1.00 \\ 
-  21.40 & 6.00 & 258.00 & 110.00 & 3.08 & 3.21 & 19.44 & 1.00 & 0.00 & 3.00 & 1.00 \\ 
-  18.70 & 8.00 & 360.00 & 175.00 & 3.15 & 3.44 & 17.02 & 0.00 & 0.00 & 3.00 & 2.00 \\ 
-  18.10 & 6.00 & 225.00 & 105.00 & 2.76 & 3.46 & 20.22 & 1.00 & 0.00 & 3.00 & 1.00 \\ 
-  14.30 & 8.00 & 360.00 & 245.00 & 3.21 & 3.57 & 15.84 & 0.00 & 0.00 & 3.00 & 4.00 \\ 
-  24.40 & 4.00 & 146.70 & 62.00 & 3.69 & 3.19 & 20.00 & 1.00 & 0.00 & 4.00 & 2.00 \\ 
-  22.80 & 4.00 & 140.80 & 95.00 & 3.92 & 3.15 & 22.90 & 1.00 & 0.00 & 4.00 & 2.00 \\ 
-  19.20 & 6.00 & 167.60 & 123.00 & 3.92 & 3.44 & 18.30 & 1.00 & 0.00 & 4.00 & 4.00 \\ 
-  17.80 & 6.00 & 167.60 & 123.00 & 3.92 & 3.44 & 18.90 & 1.00 & 0.00 & 4.00 & 4.00 \\ 
-  16.40 & 8.00 & 275.80 & 180.00 & 3.07 & 4.07 & 17.40 & 0.00 & 0.00 & 3.00 & 3.00 \\ 
-  17.30 & 8.00 & 275.80 & 180.00 & 3.07 & 3.73 & 17.60 & 0.00 & 0.00 & 3.00 & 3.00 \\ 
-  15.20 & 8.00 & 275.80 & 180.00 & 3.07 & 3.78 & 18.00 & 0.00 & 0.00 & 3.00 & 3.00 \\ 
-  10.40 & 8.00 & 472.00 & 205.00 & 2.93 & 5.25 & 17.98 & 0.00 & 0.00 & 3.00 & 4.00 \\ 
-  10.40 & 8.00 & 460.00 & 215.00 & 3.00 & 5.42 & 17.82 & 0.00 & 0.00 & 3.00 & 4.00 \\ 
-  14.70 & 8.00 & 440.00 & 230.00 & 3.23 & 5.34 & 17.42 & 0.00 & 0.00 & 3.00 & 4.00 \\ 
-  32.40 & 4.00 & 78.70 & 66.00 & 4.08 & 2.20 & 19.47 & 1.00 & 1.00 & 4.00 & 1.00 \\ 
-  30.40 & 4.00 & 75.70 & 52.00 & 4.93 & 1.61 & 18.52 & 1.00 & 1.00 & 4.00 & 2.00 \\ 
-  33.90 & 4.00 & 71.10 & 65.00 & 4.22 & 1.83 & 19.90 & 1.00 & 1.00 & 4.00 & 1.00 \\ 
-  21.50 & 4.00 & 120.10 & 97.00 & 3.70 & 2.46 & 20.01 & 1.00 & 0.00 & 3.00 & 1.00 \\ 
-  15.50 & 8.00 & 318.00 & 150.00 & 2.76 & 3.52 & 16.87 & 0.00 & 0.00 & 3.00 & 2.00 \\ 
-  15.20 & 8.00 & 304.00 & 150.00 & 3.15 & 3.44 & 17.30 & 0.00 & 0.00 & 3.00 & 2.00 \\ 
-  13.30 & 8.00 & 350.00 & 245.00 & 3.73 & 3.84 & 15.41 & 0.00 & 0.00 & 3.00 & 4.00 \\ 
-  19.20 & 8.00 & 400.00 & 175.00 & 3.08 & 3.85 & 17.05 & 0.00 & 0.00 & 3.00 & 2.00 \\ 
-  27.30 & 4.00 & 79.00 & 66.00 & 4.08 & 1.94 & 18.90 & 1.00 & 1.00 & 4.00 & 1.00 \\ 
-  26.00 & 4.00 & 120.30 & 91.00 & 4.43 & 2.14 & 16.70 & 0.00 & 1.00 & 5.00 & 2.00 \\ 
-  30.40 & 4.00 & 95.10 & 113.00 & 3.77 & 1.51 & 16.90 & 1.00 & 1.00 & 5.00 & 2.00 \\ 
-  15.80 & 8.00 & 351.00 & 264.00 & 4.22 & 3.17 & 14.50 & 0.00 & 1.00 & 5.00 & 4.00 \\ 
-  19.70 & 6.00 & 145.00 & 175.00 & 3.62 & 2.77 & 15.50 & 0.00 & 1.00 & 5.00 & 6.00 \\ 
-  15.00 & 8.00 & 301.00 & 335.00 & 3.54 & 3.57 & 14.60 & 0.00 & 1.00 & 5.00 & 8.00 \\ 
-  21.40 & 4.00 & 121.00 & 109.00 & 4.11 & 2.78 & 18.60 & 1.00 & 1.00 & 4.00 & 2.00 \\ 
-   \bottomrule
-\end{longtable}
-\endgroup
-
-\hfill
-
-\hypertarget{huxtable}{%
-\subsection{Huxtable}\label{huxtable}}
-
-Huxtable is a very nice package for making working with tables between
-Rmarkdown and Tex easier.
-
-This cost some adjustment to the Tex templates to make it work, but it
-now works nicely.
-
-See documentation for this package
-\href{https://hughjonesd.github.io/huxtable/huxtable.html}{here}. A
-particularly nice addition of this package is for making the printing of
-regression results a joy (see
-\href{https://hughjonesd.github.io/huxtable/huxtable.html\#creating-a-regression-table}{here}).
-Here follows an example:
-
-If you are eager to use huxtable, comment out the Huxtable table in the
-Rmd template, and uncomment the colortbl package in your Rmd's root.
-
-Note that I do not include this in the ordinary template, as some latex
-users have complained it breaks when they build their Rmds (especially
-those using tidytex - I don't have this problem as I have the full
-Miktex installed on mine). Up to you, but I strongly recommend
-installing the package manually and using huxtable. To make this work,
-uncomment the \emph{Adding additional latex packages} part in yaml at
-the top of the Rmd file. Then comment out the huxtable example in the
-template below this line. Reknit, and enjoy.
-
- 
-  \providecommand{\huxb}[2]{\arrayrulecolor[RGB]{#1}\global\arrayrulewidth=#2pt}
-  \providecommand{\huxvb}[2]{\color[RGB]{#1}\vrule width #2pt}
-  \providecommand{\huxtpad}[1]{\rule{0pt}{#1}}
-  \providecommand{\huxbpad}[1]{\rule[-#1]{0pt}{#1}}
-
-\begin{table}[ht]
-\begin{centerbox}
-\begin{threeparttable}
-\captionsetup{justification=centering,singlelinecheck=off}
-\caption{Regression Output}
- \label{Reg01}
-\setlength{\tabcolsep}{0pt}
-\begin{tabular}{l l l l}
-
-
-\hhline{>{\huxb{0, 0, 0}{0.8}}->{\huxb{0, 0, 0}{0.8}}->{\huxb{0, 0, 0}{0.8}}->{\huxb{0, 0, 0}{0.8}}-}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}c!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\centering \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont } \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{c!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\centering \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont Reg1} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{c!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\centering \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont Reg2} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{c!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\centering \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont Reg3} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{>{\huxb{255, 255, 255}{0.4}}->{\huxb{0, 0, 0}{0.4}}->{\huxb{0, 0, 0}{0.4}}->{\huxb{0, 0, 0}{0.4}}-}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont (Intercept)} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont -2256.361 ***} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 5763.668 ***} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 4045.333 ***} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont } \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont (13.055)~~~} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont (740.556)~~~} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont (286.205)~~~} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont carat} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 7756.426 ***} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont ~~~~~~~~} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 7765.141 ***} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont } \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont (14.067)~~~} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont ~~~~~~~~} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont (14.009)~~~} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont depth} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont ~~~~~~~~} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont -29.650 *~~} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont -102.165 ***} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont } \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont ~~~~~~~~} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont (11.990)~~~} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont (4.635)~~~} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{>{\huxb{255, 255, 255}{0.4}}->{\huxb{0, 0, 0}{0.4}}->{\huxb{0, 0, 0}{0.4}}->{\huxb{0, 0, 0}{0.4}}-}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont N} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 53940~~~~~~~~} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 53940~~~~~~~~} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 53940~~~~~~~~} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont R2} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 0.849~~~~} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 0.000~~~~} \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont 0.851~~~~} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{>{\huxb{0, 0, 0}{0.8}}->{\huxb{0, 0, 0}{0.8}}->{\huxb{0, 0, 0}{0.8}}->{\huxb{0, 0, 0}{0.8}}-}
-\arrayrulecolor{black}
-
-\multicolumn{4}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} {\fontsize{12pt}{14.4pt}\selectfont  *** p $<$ 0.001;  ** p $<$ 0.01;  * p $<$ 0.05.} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
+Ranger & ranger & An updated and fast implementation of random forest for big data \\
+\hline
 \end{tabular}
-\end{threeparttable}\par\end{centerbox}
+\end{center}
 
-\end{table}
- 
+\hypertarget{evaluation}{%
+\subsubsection{Evaluation}\label{evaluation}}
 
-FYI - R also recently introduced the gt package, which is worthwhile
-exploring too.
+To ensure that the correct model is chosen, the accuracy of each model
+is evaluated and compared. However, since the dataset is unbalance, I
+also analyze the F measure, also known as the \(F_1\) score, of each
+model. The \(F_1\) score communicates the average between the precision
+and the recall of each model. A perfect model has an \(F_1\) score equal
+to 1, therefore models with a higher \(F_1\) score is preferred over
+models with a lower \(F_1\) score. The formula for the \(F_1\) score is
+given below;
+\[F_1 = 2\times \frac{ precision \times recall}{precision + recall}\]
 
-\hypertarget{lists}{%
-\section{Lists}\label{lists}}
+The extremely unbalanced data will affect the results of the \(F_1\)
+score. Therefore, it is also informative to evaluate the macro \(F_1\)
+score and the weighted \(F_1\) score. The macro \(F_1\) is not affected
+by unbalanced data and is equal to the average of the \(F_1\) score and
+is commonly used when there are multiple levels or classes. It gives the
+same importance to each poverty level. A higher macro \(F_1\) score is
+preferred to a lower one. The formula for the macro \(F_1\) score if
+given below; \[ Macro\: F_1\: score = \frac{1}{N}{\sum}_{i=0}^N F_1\]
 
-To add lists, simply using the following notation
+Where \(N\) is the number of different poverty levels and \(i\) is the
+levels index. The drawback of the macro \(F_1\) measure is that is gives
+equal weight to all poverty levels, which implies that it over emphasis
+the under-represented poverty levels. The weighted average \(F_1\) score
+is similar to the macro \(F_1\) score, but here the \(F_1\) score is
+weighed according of the number of households from the specific poverty
+level, which emphasis poverty levels according to size of each poverty
+level. The formula for the weighted \(F_1\) score is given below;
+\[ Weighted\: F_1\: score = \frac{n_i\sum_{i=1}^k F_1}{\sum_{i=n}^k n_i}\]
 
-\begin{itemize}
-\item
-  This is really simple
+\hypertarget{results-and-discussion}{%
+\section{Results and Discussion}\label{results-and-discussion}}
 
-  \begin{itemize}
-  \tightlist
-  \item
-    Just note the spaces here - writing in R you have to sometimes be
-    pedantic about spaces\ldots{}
-  \end{itemize}
-\item
-  Note that Rmarkdown notation removes the pain of defining
-  \LaTeX environments!
-\end{itemize}
+\hypertarget{classification-models}{%
+\subsection{Classification Models}\label{classification-models}}
 
-\hypertarget{conclusion}{%
-\section{Conclusion}\label{conclusion}}
+The table below shows the different metrics to make comparing different
+models easier. The first feature that is observed is that the models
+vary drastically in time. The \emph{lda}, \emph{rpart} and
+\emph{naive bayes} models are extremely fast whereas \emph{multinom} and
+\emph{ranger} take relatively long to run. Furthermore, \emph{ranger}
+scores the best for accuracy and \(F_1\) measures.
 
-I hope you find this template useful. Remember, stackoverflow is your
-friend - use it to find answers to questions. Feel free to write me a
-mail if you have any questions regarding the use of this package. To
-cite this package, simply type citation(``Texevier'') in Rstudio to get
-the citation for (\protect\hyperlink{ref-Texevier}{\textbf{Texevier?}})
-(Note that uncited references in your bibtex file will not be included
-in References).
+\begin{center}
+\begin{tabular}{| c| c| c |c| c|}
+\hline
+\textbf{Models} & \textbf{Time} & \textbf{Accuracy} & \textbf{Macro \(F_1\)} & \textbf{weighted \(F_1\)} \\
+\hline
+multinom & 37.17 & 0.9935839 & 0.9820473 & 0.9935798 \\
+\hline
+lda & 0.81 & 0.7774977 & 0.4561088 & 0.7409658 \\
+\hline
+naive bayes & 1.67 & 0.8819890 & 0.8138291 & 0.8862441 \\
+\hline
+svmLinear & 9.91 & 0.9660862 & 0.9134729 & 0.9661192 \\
+\hline
+knn & 4.81 & 0.9869386 & 0.9714937 & 0.9876236 \\
+\hline 
+rpart & 1.08 & 0.9372136 & 0.9155884 & 0.9137702 \\
+\hline 
+ranger & 41.92 & 1.00000000 & 1.00000000 & 1.00000000 \\
+\hline
+\end{tabular}
+\end{center}
+
+Analyzing the accuracy score, Figure 5.1 shows that \emph{ranger} has
+the highest accuracy, followed closely by \emph{multinom}. However,
+these two models also take the longest to run. \emph{knn} and
+\textbackslash emph\{rpart) are relatively fast and thet have a high
+level of accuracy. For the fastest running models, decision trees
+(\emph{rpart}) are the most accurate. Figure 5.1 also implies that there
+is some trade-off between accuracy and computational time.
+
+\begin{figure}
+\centerline{\includegraphics[scale=0.65]{accuracy.png}}
+\caption{Speed versus Accuracy}
+\end{figure}
+
+\begin{figure}
+\centerline{\includegraphics[scale=0.65]{macroF1.png}}
+\caption{Speed versus Macro F1 }
+\end{figure}
+
+\begin{figure}
+\centerline{\includegraphics[scale=0.65]{weightedF1.png}}
+\caption{Speed versus Weighted F1 }
+\end{figure}
 
 \newpage
 
@@ -741,6 +563,10 @@ in References).
 
 \hypertarget{refs}{}
 \begin{CSLReferences}{1}{0}
+\leavevmode\hypertarget{ref-boehmke2019hands}{}%
+Boehmke, B. \& Greenwell, B.M. 2019. \emph{Hands-on machine learning
+with r}. CRC Press.
+
 \leavevmode\hypertarget{ref-leibbrandt2010trends}{}%
 Leibbrandt, M., Woolard, I., Finn, A. \& Argent, J. 2010. Trends in
 south african income distribution and poverty since the fall of

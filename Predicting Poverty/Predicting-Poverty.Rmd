@@ -111,6 +111,7 @@ library(lares)
 library(rpart)
 library(rpart.plot)
 library(e1071)
+library(parallel)
 
 house <- read.csv("C:/Users/jesic/OneDrive/Desktop/ghs-2018-house-1.0-csv.csv")
 house.simple <-  select(house, head_popgrp, head_sex, head_age, Q55Bedr, Q55TotRm, Q57Rent, Q58Val, Q63NrCell, Q814Exp, Q89aGrant, Q821WashM, hholdsz, chld17yr_hh, Q42Msal_hh, totmhinc, econact_hh)
@@ -250,172 +251,180 @@ corr_var(b, poverty_level, top=10)
 
 
 
-
-
-
 #  Methodology \label{Meth}
 
-## Subsection
-Ideally do not overuse subsections. It equates to bad writing.^[This is an example of a footnote by the way. Something that should also not be overused.]
+## Analysing Classification Models 
 
-## Math section
+To see which model predicts poverty most accurately and efficiently, I assess the performance of x supervised classification models using the caret package. The dataset is extremely unbalanced; therefore, the defaults parameter will be Kappa to order to improve the performance of the models. The Kappa metric compares the observed accuracy with the expected accuracy. It also accounts for random chance which implies that it makes the model more accurate that simply using an Accuracy as a metric. The Kappa matric is calculated using the formula;
+\[k = \frac{p_0 -p_e}{1-p_e}\]
+Where \(p_0\) represents the overall accuracy of the model and \(p_e\) represents that measure of the agreement between the predictions and actual class value of the model. Therefore, Kappa attempts to account for evaluation bias by considering the correct classification by a random guess. 
 
-Equations should be written as such:
-
-\begin{align}
-\beta = \sum_{i = 1}^{\infty}\frac{\alpha^2}{\sigma_{t-1}^2} \label{eq1} \\
-\int_{x = 1}^{\infty}x_{i} = 1 \notag
-\end{align}
-
-If you would like to see the equations as you type in Rmarkdown, use $ symbols instead (see this for yourself by adjusted the equation):
-
-$$
-\beta = \sum_{i = 1}^{\infty}\frac{\alpha^2}{\sigma_{t-1}^2} \\
-\int_{x = 1}^{\infty}x_{i} = 1
-$$
-
-Note again the reference to equation \ref{eq1}. Writing nice math requires practice. Note I used a forward slashes to make a space in the equations. I can also align equations using  __\&__, and set to numbering only the first line. Now I will have to type ``begin equation'' which is a native \LaTeX command. Here follows a more complicated equation:
+The table below briefly discusses the seven different classification models that I compared to determine which model is the most accurate to predict poverty @boehmke2019hands.
 
 
-\begin{align}
-	y_t &= c + B(L) y_{t-1} + e_t   \label{eq2}    \\ \notag
-	e_t &= H_t^{1/2}  z_t ; \quad z_t \sim  N(0,I_N) \quad \& \quad H_t = D_tR_tD_t \\ \notag
-		D_t^2 &= {\sigma_{1,t}, \dots, \sigma_{N,t}}   \\ \notag
-		\sigma_{i,t}^2 &= \gamma_i+\kappa_{i,t}  v_{i, t-1}^2 +\eta_i  \sigma_{i, t-1}^2, \quad \forall i \\ \notag
-		R_{t, i, j} &= {diag(Q_{t, i, j}}^{-1}) . Q_{t, i, j} . diag(Q_{t, i, j}^{-1})  \\ \notag
-		Q_{t, i, j} &= (1-\alpha-\beta)  \bar{Q} + \alpha  z_t  z_t'  + \beta  Q_{t, i, j} \notag
-\end{align}
+\begin{center}
+\begin{tabular}{| m{10em} | m{2cm}| m{10cm} |}
+\hline
+\textbf{Model} & \textbf{Reference Name} & \textbf{Description} \\
+\hline
+Multinomial Logistic Regression &  multinom & Makes use of the maximum likelihood estimation to evaluate the probability of a categorical relationship \\
+\hline
+Linear Discriminant Analysis & lda & Used to find linear combinations of separates multiple classes of features, representing the dependent variable as a linear combination of other features \\
+\hline
+Naive Bayes & naive bayes & Using Bayes Theorem, this model applies posterior probability to the categorization, making the uneducated assumption that the predictors are independent \\
+\hline
+Linear Support Vector Machine & svmLinear & The model creates a line that separates data into classes \\
+\hline
+K-Nearest Neighbor & knn & Each observation in the dataset is predicted based on its similarity to other observations \\
+\hline
+Recursive Partitioning & rpart & Builds models using a general structure which consist of a two-stage procedure and then final presenting the model as a binary tree \\
+\hline 
+Ranger & ranger & An updated and fast implementation of random forest for big data \\
+\hline
+\end{tabular}
+\end{center}
 
-Note that in \ref{eq2} I have aligned the equations by the equal signs. I also want only one tag, and I create spaces using ``quads''.
+### Evaluation 
 
-See if you can figure out how to do complex math using the two examples provided in \ref{eq1} and \ref{eq2}.
+To ensure that the correct model is chosen, the accuracy of each model is evaluated and compared. However, since the dataset is unbalance, I also analyze the F measure, also known as the \(F_1\) score, of each model. The \(F_1\) score communicates the average between the precision and the recall of each model. A perfect model has an \(F_1\) score equal to 1, therefore models with a higher \(F_1\) score is preferred over models with a lower \(F_1\) score. The formula for the \(F_1\) score is given below;
+\[F_1 = 2\times \frac{ precision \times recall}{precision + recall}\]
 
-<!-- $$ -->
-<!-- This is a commented out section in the writing part. -->
-<!-- Comments are created by highlighting text, amnd pressing CTL+C -->
-<!-- \\begin{align} -->
-<!-- \\beta = \\alpha^2 -->
-<!-- \end{align} -->
-<!-- $$ -->
+The extremely unbalanced data will affect the results of the \(F_1\) score. Therefore, it is also informative to evaluate the macro \(F_1\) score and the weighted \(F_1\) score. The macro \(F_1\)  is not affected by unbalanced data and is equal to the average of the \(F_1\) score and is commonly used when there are multiple levels or classes. It gives the same importance to each poverty level. A higher macro \(F_1\) score is preferred to a lower one.  The formula for the macro \(F_1\) score if given below; 
+\[ Macro\: F_1\: score = \frac{1}{N}{\sum}_{i=0}^N F_1\]
 
-# Results
+Where \(N\) is the number of different poverty levels and \(i\) is the levels index. The drawback of the macro \(F_1\) measure is that is gives equal weight to all poverty levels, which implies that it over emphasis the under-represented poverty levels. The weighted average \(F_1\) score is similar to the macro \(F_1\) score, but here the \(F_1\) score is weighed according of the number of households from the specific poverty level, which emphasis poverty levels according to size of each poverty level.  The formula for the weighted \(F_1\) score is given below;
+\[ Weighted\: F_1\: score = \frac{n_i\sum_{i=1}^k F_1}{\sum_{i=n}^k n_i}\]
 
-Tables can be included as follows. Use the _xtable_ (or kable) package for tables. Table placement = H implies Latex tries to place the table Here, and not on a new page (there are, however, very many ways to skin this cat. Luckily there are many forums online!).
+# Results and Discussion 
+
+## Classification Models 
+
+The table below shows the different metrics to make comparing different models easier. The first feature that is observed is that the models vary drastically in time. The \emph{lda}, \emph{rpart} and \emph{naive bayes} models are extremely fast whereas \emph{multinom} and \emph{ranger} take relatively long to run. Furthermore, \emph{ranger} scores the best for accuracy and \(F_1\) measures. 
+
+```{r}
+train$poverty_level <- as.factor(train$poverty_level)
+test$poverty_level <- as.factor(test$poverty_level)
+# define models to try
+models <- c("multinom", "lda", "naive_bayes", "svmLinear", "knn", "rpart", "ranger")
+# set CV control for knn, k-folds
+control <- trainControl(method = "cv", number = 10, p = .9) # 10 fold, 10%
+# fit models
+set.seed(1)
+
+quiet(train_models <- lapply(models, function(model){
+        print(model)
+    train(poverty_level ~ ., method = model, data = train, trControl = control, metric = "Kappa")
+}))
+
+names(train_models) <- models
 
 
-```{r ShortTable, results = 'asis'}
+# extract elapsed training times
+elapsed <- sapply(train_models, function(object)
+    object$times$everything["elapsed"])
 
-library(xtable)
-data <- mtcars[1:5,] %>% tibble::as_tibble()
+# extracting the accuracy from CM in one step without creating a separate predictions vector
+acc = sapply(train_models, function(x){
+    pred = predict(x, newdata = test)
+    cm = confusionMatrix(pred, reference = test$poverty_level)
+    return(cm[["overall"]]["Accuracy"])
+}
+)
+# extract F1 by class
+F1 = sapply(train_models, function(x){
+    pred = predict(x, newdata = test)
+    cm = confusionMatrix(pred, reference = test$poverty_level)
+    return(cm[["byClass"]][ , "F1"])
+}
+)
+# extract macro F1
+F1_M = sapply(train_models, function(x){
+    pred = predict(x, newdata = test)
+    cm = confusionMatrix(pred, reference = test$poverty_level)
+    return(mean(cm[["byClass"]][ , "F1"], na.rm = TRUE))
+}
+)
+# extract weighted F1
+F1_W <- sapply(train_models, function(x){
+    pred = predict(x, newdata = test)
+    cm = confusionMatrix(pred, reference = test$poverty_level)
+    actual = colSums(cm$table)
+    F1 = cm[["byClass"]][ , "F1"]
+    return((sum(actual*F1, na.rm = TRUE))/(sum(actual)))
+}
+)
 
-table <- xtable(data, caption = "Short Table Example \\label{tab1}")
-  print.xtable(table,
-             # tabular.environment = "longtable",
-             floating = TRUE,
-             table.placement = 'H',
-             # scalebox = 0.3,
-             comment = FALSE,
-             caption.placement = 'bottom'
-             )
-
+df <- data.frame(models, elapsed, acc, F1_M, F1_W)
 ```
 
-To reference calculations __in text__, _do this:_ From table \ref{tab1} we see the average value of mpg is `r mean(mtcars[1:5,]$mpg)`.
 
-Including tables that span across pages, use the following (note that I add below the table: ``continue on the next page''). This is a neat way of splitting your table across a page.
+\begin{center}
+\begin{tabular}{| c| c| c |c| c|}
+\hline
+\textbf{Models} & \textbf{Time} & \textbf{Accuracy} & \textbf{Macro \(F_1\)} & \textbf{weighted \(F_1\)} \\
+\hline
+multinom & 37.17 & 0.9935839 & 0.9820473 & 0.9935798 \\
+\hline
+lda & 0.81 & 0.7774977 & 0.4561088 & 0.7409658 \\
+\hline
+naive bayes & 1.67 & 0.8819890 & 0.8138291 & 0.8862441 \\
+\hline
+svmLinear & 9.91 & 0.9660862 & 0.9134729 & 0.9661192 \\
+\hline
+knn & 4.81 & 0.9869386 & 0.9714937 & 0.9876236 \\
+\hline 
+rpart & 1.08 & 0.9372136 & 0.9155884 & 0.9137702 \\
+\hline 
+ranger & 41.92 & 1.00000000 & 1.00000000 & 1.00000000 \\
+\hline
+\end{tabular}
+\end{center}
 
-Use the following default settings to build your own possibly long tables. Note that the following will fit on one page if it can, but cleanly spreads over multiple pages:
-
-```{r LongTable, results = 'asis'}
-
-library(xtable)
-
-data = mtcars %>% tibble::as_tibble()
-  addtorow          <- list()
-  addtorow$pos      <- list()
-  addtorow$pos[[1]] <- c(0)
-  addtorow$command  <- c(paste("\\hline \n",
-                               "\\endhead \n",
-                               "\\hline \n",
-                               "{\\footnotesize Continued on next page} \n",
-                               "\\endfoot \n",
-                               "\\endlastfoot \n",sep=""))
-table <- xtable(data, caption = "Long Table Example")
-  print.xtable(table,
-             tabular.environment = "longtable",
-             floating = FALSE, # Leave this as is.
-             table.placement = 'H', # Leave this as is.
-             booktabs = T, # Aesthetics
-             include.rownames = FALSE,  # Typically you don't want this in a table.
-             add.to.row = addtorow, # For adding the Continued on next page part...
-             comment = FALSE,
-             caption.placement = 'top',  # Where do you want the caption?
-             size="\\fontsize{12pt}{13pt}\\selectfont"  # Size of text in table..
-             )
-# See https://cran.r-project.org/web/packages/xtable/vignettes/xtableGallery.pdf for table inspiration
+Analyzing the accuracy score, Figure 5.1 shows that \emph{ranger} has the highest accuracy, followed closely by \emph{multinom}. However, these two models also take the longest to run. \emph{knn} and \emph{rpart} are relatively fast and they have a high level of accuracy.  For the fastest running models, decision trees (\emph{rpart}) are the most accurate. Figure 5.1 also implies that there is some trade-off between accuracy and computational time.  
+```{r Figure5,  warning =  FALSE, fig.align = 'center', fig.cap = "Speed versus Accuracy \\label{Figure5}", fig.ext = 'png', fig.height = 4, fig.width = 6}
+plot2 <- ggplot(data=df) +
+    geom_point(mapping = aes(x= elapsed, y = acc, color = models, size = 10)) +
+    geom_text(aes(x= elapsed, y = acc, color = models, label = models), hjust =0.4, vjust= -0.8, nudge_x = 0.1) +
+    labs(y = "Accuracy", x = "Speed", title = "Comparing Speed and Accuracy of Different Models", subtitle = "using training model", caption = "Own calculations") +
+    ggthemes::theme_economist_white() +
+    theme(legend.position = "none")
 ```
 
-\hfill
 
-<!-- hfill can be used to create a space, like here between text and table. -->
-
-
-## Huxtable
-
-Huxtable is a very nice package for making working with tables between Rmarkdown and Tex easier.
-
-This cost some adjustment to the Tex templates to make it work, but it now works nicely.
-
-See documentation for this package [here](https://hughjonesd.github.io/huxtable/huxtable.html). A particularly nice addition of this package is for making the printing of regression results a joy (see [here](https://hughjonesd.github.io/huxtable/huxtable.html#creating-a-regression-table)). Here follows an example:
+\begin{figure}
+\centerline{\includegraphics[scale=0.65]{accuracy.png}}
+\caption{Speed versus Accuracy}
+\end{figure}
 
 
-If you are eager to use huxtable, comment out the Huxtable table in the Rmd template, and uncomment the colortbl package in your Rmd's root.
+```{r Figure6,  warning =  FALSE, fig.align = 'center', fig.cap = "Speed versus Macro F1 Score \\label{Figure6}", fig.ext = 'png', fig.height = 5, fig.width = 7.5}
+plot3 <- ggplot(data=df) +
+    geom_point(mapping = aes(x= elapsed, y = F1_M, color = models, size = 10)) +
+    geom_text(aes(x= elapsed, y = F1_M, color = models, label = models), hjust =0.7, vjust= -0.8, nudge_x = 0.1) +
+    labs(y = "Macro F1 Score", x = "Speed", title = "Comparing Speed and the Macro-F1 Score of Different Models", subtitle = "using training model", caption = "Own calculations") +
+    ggthemes::theme_economist_white() +
+    theme(legend.position = "none")
 
-Note that I do not include this in the ordinary template, as some latex users have complained it breaks when they build their Rmds (especially those using tidytex - I don't have this problem as I have the full Miktex installed on mine). Up to you, but I strongly recommend installing the package manually and using huxtable. To make this work, uncomment the _Adding additional latex packages_ part in yaml at the top of the Rmd file. Then comment out the huxtable example in the template below this line. Reknit, and enjoy.
-
-```{r, results = 'asis'}
-
-if(!require(huxtable)) install.packages(huxtable)
-library(huxtable)
-data(diamonds, package = 'ggplot2')
-Title <- "Regression Output"
-Label <- "Reg01"
-lm1 <- lm(price ~ carat, diamonds)
-lm2 <- lm(price ~ depth, diamonds)
-lm3 <- lm(price ~ carat + depth, diamonds)
-htab <-
-huxreg(lm1, lm2, lm3,
-                statistics = c(N = "nobs", R2 = "r.squared"),
-                note = "%stars%.") %>%
-  set_caption(Title) %>%
-  set_label(Label)
-# More settings:
-font_size(htab) <- 12
-# Let's change regression names: this is slightly hacky, but works. Comment out this section to see what the default looks like:
-  Names <- c( "Reg1", "Reg2", "Reg3")
-  for(i in 1:length(Names)) {
-    htab[1,][[1+i]] <- Names[i]
-  }
-# Now simply call the table:
-htab
 
 ```
+\begin{figure}
+\centerline{\includegraphics[scale=0.65]{macroF1.png}}
+\caption{Speed versus Macro F1 }
+\end{figure}
 
-FYI - R also recently introduced the gt package, which is worthwhile exploring too.
+```{r}
+plot4 <- ggplot(data=df) +
+    geom_point(mapping = aes(x= elapsed, y = F1_W, color = models, size = 10)) +
+    geom_text(aes(x= elapsed, y = F1_W, color = models, label = models), hjust =0.7, vjust= -0.8, nudge_x = 0.1) +
+    labs(y = "Weighted F1 Score", x = "Speed", title = "Compaing Speed and the Weighted-F1 Score of Different Models", subtitle = "using training model", caption = "Own calculations") +
+    ggthemes::theme_economist_white() +
+    theme(legend.position = "none")
+```
 
-# Lists
-
-To add lists, simply using the following notation
-
-* This is really simple
-
-    + Just note the spaces here - writing in R you have to sometimes be pedantic about spaces...
-
-* Note that Rmarkdown notation removes the pain of defining \LaTeX environments!
-
-# Conclusion
-
-I hope you find this template useful. Remember, stackoverflow is your friend - use it to find answers to questions. Feel free to write me a mail if you have any questions regarding the use of this package. To cite this package, simply type citation("Texevier") in Rstudio to get the citation for @Texevier (Note that uncited references in your bibtex file will not be included in References).
+\begin{figure}
+\centerline{\includegraphics[scale=0.65]{weightedF1.png}}
+\caption{Speed versus Weighted F1 }
+\end{figure}
 
 <!-- Make title of bibliography here: -->
 <!-- \newpage -->
