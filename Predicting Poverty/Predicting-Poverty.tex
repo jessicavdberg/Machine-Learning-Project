@@ -425,8 +425,8 @@ per month (\emph{Q57Rent}) and the number of adults in the household
 Models}\label{analysing-classification-models}}
 
 To see which model predicts poverty most accurately and efficiently, I
-assess the performance of x supervised classification models using the
-caret package. The dataset is extremely unbalanced; therefore, the
+assess the performance of seven supervised classification models using
+the caret package. The dataset is extremely unbalanced; therefore, the
 defaults parameter will be Kappa to order to improve the performance of
 the models. The Kappa metric compares the observed accuracy with the
 expected accuracy. It also accounts for random chance which implies that
@@ -436,7 +436,9 @@ metric. The Kappa matric is calculated using the formula;
 accuracy of the model and \(p_e\) represents that measure of the
 agreement between the predictions and actual class value of the model.
 Therefore, Kappa attempts to account for evaluation bias by considering
-the correct classification by a random guess.
+the correct classification by a random guess
+\protect\hyperlink{ref-dalpiaz}{Dalpiaz}
+(\protect\hyperlink{ref-dalpiaz}{2017}).
 
 The table below briefly discusses the seven different classification
 models that I compared to determine which model is the most accurate to
@@ -497,6 +499,36 @@ level, which emphasis poverty levels according to size of each poverty
 level. The formula for the weighted \(F_1\) score is given below;
 \[ Weighted\: F_1\: score = \frac{n_i\sum_{i=1}^k F_1}{\sum_{i=n}^k n_i}\]
 
+\hypertarget{decision-tree}{%
+\subsection{Decision Tree}\label{decision-tree}}
+
+As I will show in section 5.1, decision trees have the fastest
+computational time without having to compromise much on the accuracy of
+a model. Decision trees are constructed through an algorithmic approach
+that identifies the most optimal way to split a dataset based on the
+information in the dataset. Decision trees are displayed in a
+flowchart-like structure where each internal node represents some sort
+of test on a specific feature. Each leaf node then represents a poverty
+level. The path from the root (the first node) to the leaf represents
+the classification rules. Decision trees are relatively easy to
+interpret and therefore, are commonly used
+\protect\hyperlink{ref-boehmke2019hands}{Boehmke \& Greenwell}
+(\protect\hyperlink{ref-boehmke2019hands}{2019}).
+
+\hypertarget{random-forest}{%
+\subsection{Random Forest}\label{random-forest}}
+
+In section 5.1, I also show that random forest provides perfect accuracy
+out of all the classification models that are considered, however, it
+also has the longest computational time. Random forest uses multiple
+decision trees to provide more flexibility and better accuracy, while
+reaching a single result. Random forest searches for the best feature
+form a random subset of features which leads to it providing more
+randomness to the model. The increased in randomness is what improves
+the model accuracy as it ensures a low correlation among the multiple
+decision trees \protect\hyperlink{ref-breiman2015random}{Breiman}
+(\protect\hyperlink{ref-breiman2015random}{2015}).
+
 \hypertarget{results-and-discussion}{%
 \section{Results and Discussion}\label{results-and-discussion}}
 
@@ -535,25 +567,120 @@ ranger & 41.92 & 1.00000000 & 1.00000000 & 1.00000000 \\
 Analyzing the accuracy score, Figure 5.1 shows that \emph{ranger} has
 the highest accuracy, followed closely by \emph{multinom}. However,
 these two models also take the longest to run. \emph{knn} and
-\textbackslash emph\{rpart) are relatively fast and thet have a high
-level of accuracy. For the fastest running models, decision trees
-(\emph{rpart}) are the most accurate. Figure 5.1 also implies that there
-is some trade-off between accuracy and computational time.
+\emph{rpart} are relatively fast and they have a high level of accuracy.
+For the fastest running models, decision trees (\emph{rpart}) are the
+most accurate. Figure 5.1 also implies that there is some trade-off
+between accuracy and computational time.
 
 \begin{figure}
 \centerline{\includegraphics[scale=0.65]{accuracy.png}}
 \caption{Speed versus Accuracy}
 \end{figure}
 
+Figure 5.2 shows the relationship between computational time and the
+Macro \(F_1\) score measure. \emph{ranger} and \emph{multinom} still
+have the highest degree of accuracy. However, \emph{rpart} has a higher
+degree of accuracy while maintain the same computational time.
+\emph{naive bayes} is performing worst in terms of accuracy, while
+\emph{knn}, \emph{svmLinear} and \emph{lda} are all performing
+relatively the same. Here, the same conclusion is reached as with Figure
+5.1, that decision trees (\emph{rpart}) is the most accurate when
+analyzing models with the fastest computational time.
+
 \begin{figure}
 \centerline{\includegraphics[scale=0.65]{macroF1.png}}
 \caption{Speed versus Macro F1 }
 \end{figure}
 
+Figure 5.3 displays that \emph{naive bayes} preforms slightly better in
+terms of accuracy when compared to the macro \(F_1\) score whereas the
+rest of the models preform similarly. This suggest that random forest
+(\emph{ranger}) is the most accurate when predicting poverty across all
+the measures, however, the computational time is extensive. If you are
+willing to compromise on the accuracy of a model, then decision tree
+(\emph{rpart}) is the best model, which serves a high degree of accuracy
+and an extremely fast computational time. Now that I have determined
+which models are the best to predict poverty, decisions tree and random
+forest will be analyzed.
+
 \begin{figure}
 \centerline{\includegraphics[scale=0.65]{weightedF1.png}}
 \caption{Speed versus Weighted F1 }
 \end{figure}
+
+\hypertarget{decision-tree-1}{%
+\subsection{Decision Tree}\label{decision-tree-1}}
+
+The decision tree in Figure 5.4 shows the path of classification rules
+that determine under which poverty level a household is classified,
+where red (1) represents household falling beneath the food poverty
+line, orange (2) represents households that are above the food poverty
+line but below the lower-bound poverty line, purple (3) represents
+households that are above the lower-bound poverty line but below the
+upper-bound poverty line and green (4) represents households that are
+above the upper-bound poverty line.
+
+As we can see, household income (\emph{totmhinc}), the number of adults
+in the household (\emph{adults}) and monthly salary
+(\textbackslash emph\{Q42Msal\_hh\}) are the only variables used to
+determine the poverty level of a household. The difference between
+monthly salary and total household income is that total household income
+consists of wages/salary, grants and any other type of income a
+household might receive, whereas monthly salary only consists of money
+received through employment. Figure 5.4 communicates that income
+variables and the number of adults are the most important variables when
+determining the poverty level under which households fall.
+
+\begin{figure}[H]
+
+{\centering \includegraphics{Predicting-Poverty_files/figure-latex/Figure7-1} 
+
+}
+
+\caption{Decision Tree\label{Figure7}}\label{fig:Figure7}
+\end{figure}
+
+If a household's total monthly income is below R2 375, then there is
+only a 7 percent chance that the household will earn enough to be above
+the upper-bound poverty line, and this is only for households that
+consist of only one adult. Therefore, a single adult can earn between R
+1190 and R2375 and still be above the upper-bound poverty line.
+Households of more than 4 adults tend to be poorer than smaller
+households. This statement supports the findings of @ lanjouw1995poverty
+that larger households are more likely to be poorer in developing
+countries. To further assess which variables, determine under which
+poverty level a household falls, I construct a decision tree not
+considering any income variables. This is displayed below in Figure 5.5.
+
+\begin{figure}[H]
+
+{\centering \includegraphics{Predicting-Poverty_files/figure-latex/Figure8-1} 
+
+}
+
+\caption{Decision Tree excluding income variables\label{Figure8}}\label{fig:Figure8}
+\end{figure}
+
+Now that income variables are excluded, a different picture of variables
+affecting poverty levels are displayed. The first thing we noticed is
+that all households are economically active are above the upper-bound
+poverty level. This means the employment is a big determinant of the
+poverty level a household falls under and that creating more jobs can
+help reduce poverty.
+
+Furthermore, households that have a head of younger than 60 years of
+age, tend to be better off than households where the head is older than
+60 years. This implies that old age grants, such as pension grants,
+could be very important source of income to poorer households. Pension
+grants provide a regular income to poor households, meaning that it has
+the potential to reduce poverty.
+\protect\hyperlink{ref-duflo2003}{Duflo}
+(\protect\hyperlink{ref-duflo2003}{2003}) found that pension grants also
+have a positive effect on the nutrition and health of young girls.
+Therefore, pension grants can reduce poverty as well as improve the
+health on children. It also seems that poorer households receive more
+than two grants, however, the grants fail to keep the household above
+the food-poverty line.
 
 \newpage
 
@@ -566,6 +693,18 @@ is some trade-off between accuracy and computational time.
 \leavevmode\hypertarget{ref-boehmke2019hands}{}%
 Boehmke, B. \& Greenwell, B.M. 2019. \emph{Hands-on machine learning
 with r}. CRC Press.
+
+\leavevmode\hypertarget{ref-breiman2015random}{}%
+Breiman, L. 2015. Random forests leo breiman and adele cutler.
+\emph{Random Forests-Classification Description}.
+
+\leavevmode\hypertarget{ref-dalpiaz}{}%
+Dalpiaz, D. 2017.
+
+\leavevmode\hypertarget{ref-duflo2003}{}%
+Duflo, E. 2003. Grandmothers and granddaughters: Old-age pensions and
+intrahousehold allocation in south africa. \emph{The World Bank Economic
+Review}. 17(1):1--25.
 
 \leavevmode\hypertarget{ref-leibbrandt2010trends}{}%
 Leibbrandt, M., Woolard, I., Finn, A. \& Argent, J. 2010. Trends in
