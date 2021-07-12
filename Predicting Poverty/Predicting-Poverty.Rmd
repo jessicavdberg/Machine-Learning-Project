@@ -113,6 +113,7 @@ library(rpart.plot)
 library(e1071)
 library(parallel)
 library(vip)
+library(randomForest)
 
 house <- read.csv("C:/Users/jesic/OneDrive/Desktop/ghs-2018-house-1.0-csv.csv")
 house.simple <-  select(house, head_popgrp, head_sex, head_age, Q55Bedr, Q55TotRm, Q57Rent, Q58Val, Q63NrCell, Q814Exp, Q89aGrant, Q821WashM, hholdsz, chld17yr_hh, Q42Msal_hh, totmhinc, econact_hh)
@@ -451,6 +452,18 @@ rpart.plot(fit2, extra = 106)
 Now that income variables are excluded, a different picture of variables affecting poverty levels are displayed. The first thing we noticed is that all households are economically active are above the upper-bound poverty level. This means the employment is a big determinant of the poverty level a household falls under and that creating more jobs can help reduce poverty. 
 
 Furthermore, households that have a head of younger than 60 years of age, tend to be better off than households where the head is older than 60 years. This implies that old age grants, such as pension grants, could be very important source of income to poorer households. Pension grants provide a regular income to poor households, meaning that it has the potential to reduce poverty. @duflo2003 found that pension grants also have a positive effect on the nutrition and health of young girls. Therefore, pension grants can reduce poverty as well as improve the health on children. It also seems that poorer households receive more than two grants, however, the grants fail to keep the household above the food-poverty line. 
+
+## Random Forest 
+
+The default random forest preforms 500 trees, and the number of variables tried at each split are 4. Averaging across all the trees, the out-of-bag (OOB) error rate, which measures the prediction error of the random forest model, is equal to 1.27 percent.  The classification error for the food poverty line is 2.7 percent, for the lower-bound poverty is 8.3 percent, for the upper-bound poverty line is 3.8 percent, and for the non-vulnerable is 0.12 percent. 
+
+Figure 5.6 plots the error rate across the numerous amounts of decision trees; thus, we can find which number of trees provide the lowest error rate. After 40 decision trees, the error rate seems to stay relatively constant without any significant change. 
+
+
+```{r  Figure9,  warning =  FALSE, fig.align = 'center', fig.cap = "Mean square error of forest\\label{Figure9}", fig.ext = 'png', fig.height = 3, fig.width = 4}
+rf <- randomForest(poverty_level~.,data=train[,-18], ntree=100, proximity=TRUE)
+plot(rf)
+```
 
 <!-- Make title of bibliography here: -->
 <!-- \newpage -->

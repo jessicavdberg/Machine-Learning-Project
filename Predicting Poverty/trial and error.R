@@ -16,7 +16,9 @@ library(caret)
 library(grid)
 library(lares)
 library(e1071)
-
+library(parallel)
+library(vip)
+library(randomForest)
 # for project, put in an install option for Dawie for lesser known packages like lares or make a note so that he checks that everything is installed.
 
 
@@ -114,7 +116,9 @@ corr_var(b, poverty_level, top=10)
 
 
 
-#################################################################
+###########################################################
+############### Caret package ############################
+
 # Our poverty_level needs to be a factor.
 # this is to ensure that our machine learning models treat this problem as a classification task
 
@@ -122,15 +126,13 @@ train$poverty_level <- as.factor(train$poverty_level)
 test$poverty_level <- as.factor(test$poverty_level)
 
 
-##################################################
 # Different classification models using caret packages
 # have an imbalanced dataset
-# use a default parameter we will try to optimize during training wull be Kappa in order to boost our performance.
+# use a default parameter we will try to optimize during training will be Kappa in order to boost our performance.
 # This can be done by adding the metric=Kappa argument to our train call
 
 # For performance and speed improvements, we will use a 10 K-fold cross validation to fit our models
 # This can be done using trControl function in caret
-
 
 # define models to try
 models <- c("multinom", "lda", "naive_bayes", "svmLinear", "knn", "rpart", "ranger")
@@ -139,17 +141,17 @@ control <- trainControl(method = "cv", number = 10, p = .9) # 10 fold, 10%
 # fit models
 set.seed(1)
 
-train_models <- lapply(clust,models, function(model){
+quiet(train_models <- lapply(models, function(model){
         print(model)
     train(poverty_level ~ ., method = model, data = train, trControl = control, metric = "Kappa")
-})
+}))
 
 names(train_models) <- models
 
 
 # extract elapsed training times
-elapsed <- sapply(train_models, function(object)
-    object$times$everything["elapsed"])
+quiet(elapsed <- sapply(train_models, function(object)
+    object$times$everything["elapsed"]))
 # extract accuracy from CM in one step without creating a separate predictions vector
 acc = sapply(train_models, function(x){
     pred = predict(x, newdata = test)
@@ -186,12 +188,13 @@ F1_W <- sapply(train_models, function(x){
 ## Also put in dataframe so that you can display nice graphs.
 
 df <- data.frame(models, elapsed, acc, F1_M, F1_W)
+df
 
 #speed vs accuracy
 plot2 <- ggplot(data=df) +
     geom_point(mapping = aes(x= elapsed, y = acc, color = models, size = 10)) +
-    geom_text(aes(x= elapsed, y = acc, color = models, label = models), hjust =0.7, vjust= -0.8, nudge_x = 0.1) +
-    labs(y = "Accuracy", x = "Speed", title = "Compaing Speed and Accuracy of Different Models", subtitle = "using training model", caption = "Own calculations") +
+    geom_text(aes(x= elapsed, y = acc, color = models, label = models), hjust =0.4, vjust= -0.8, nudge_x = 0.1) +
+    labs(y = "Accuracy", x = "Speed", title = "Comparing Speed and Accuracy of Different Models", subtitle = "using training model", caption = "Own calculations") +
     ggthemes::theme_economist_white() +
     theme(legend.position = "none")
 plot2
@@ -200,8 +203,8 @@ plot2
 #speed vs macroF1
 plot3 <- ggplot(data=df) +
     geom_point(mapping = aes(x= elapsed, y = F1_M, color = models, size = 10)) +
-    geom_text(aes(x= elapsed, y = F1_M, color = models, label = models), hjust =0.7, vjust= -0.8, nudge_x = 0.1) +
-    labs(y = "Macro F1 Score", x = "Speed", title = "Compaing Speed and the Macro-F1 Score of Different Models", subtitle = "using training model", caption = "Own calculations") +
+    geom_text(aes(x= elapsed, y = F1_M, color = models, label = models), hjust =0.4, vjust= -0.8, nudge_x = 0.1) +
+    labs(y = "Macro F1 Score", x = "Speed", title = "Comparing Speed and the Macro-F1 Score of Different Models", subtitle = "using training model", caption = "Own calculations") +
     ggthemes::theme_economist_white() +
     theme(legend.position = "none")
 plot3
@@ -209,7 +212,7 @@ plot3
 #speed and macro weighted
 plot4 <- ggplot(data=df) +
     geom_point(mapping = aes(x= elapsed, y = F1_W, color = models, size = 10)) +
-    geom_text(aes(x= elapsed, y = F1_W, color = models, label = models), hjust =0.7, vjust= -0.8, nudge_x = 0.1) +
+    geom_text(aes(x= elapsed, y = F1_W, color = models, label = models), hjust =0.4, vjust= -0.8, nudge_x = 0.1) +
     labs(y = "Weighted F1 Score", x = "Speed", title = "Compaing Speed and the Weighted-F1 Score of Different Models", subtitle = "using training model", caption = "Own calculations") +
     ggthemes::theme_economist_white() +
     theme(legend.position = "none")
@@ -284,116 +287,39 @@ get_imp <- function(modelname){
 cbind(imp_rpart, imp_multinom) %>% kable(caption = "Most important variables, `rpart` vs. `multinom`") %>% kable_styling()
 
 
-#TREES - notes from DAWIE - DONT KNOW WHAT I AM DOING
-##SIMPLE DECISION TREE
-#Doesn't say anything impressive. - Could be nice in descriptive stats to say how I split it.
 
-#library(rpart)
-#library(rpart.plot)
-
-#More for descriptive
-#fit <- rpart(poverty_level~., data = train, method = 'class')
-#rpart.plot(fit, extra = 106)
-
-vip(fit,bar=FALSE, aesthetics = list(fill="mediumvioletred", col="black")) + ggthemes::theme_economist_white() + labs(title = "Variable Importance Plot", subtitle = "all variables included", caption = "Own calculations")
-#Shows that three income variables are the most important. I dont like this.
+###############################################
+########### Decision Tree #####################
+##############################################
 
 # taking income_pp out
 fit1 <- rpart(poverty_level~.-income_pp, data = train, method = 'class')
 rpart.plot(fit1, extra = 106)
 
+vip(fit1,bar=FALSE, aesthetics = list(fill="mediumvioletred", col="black")) + ggthemes::theme_economist_white() + labs(title = "Variable Importance Plot", subtitle = "all variables included", caption = "Own calculations")
 
 # Taking all income variables out and adult variable.
-fit2 <- rpart(poverty_level~., data = train[,-c(13,14,16,17)], method = 'class')
+fit2 <- rpart(poverty_level~., data = train[,-c(14,15,17,18)], method = 'class')
 rpart.plot(fit2, extra = 106)
+
+
+vip(fit2,bar=FALSE, aesthetics = list(fill="lightslateblue", col="black")) + ggthemes::theme_economist_white() + labs(title = "Variable Importance Plot", subtitle = "removed all income variables", caption = "Own calculations")
+
 
 plotcp(fit2)
 
-library(vip)
+###############################################
+########### RANDOM FOREST #####################
+###############################################
 
-#Do either one or two here.
-vip(fit2,bar=FALSE, aesthetics = list(fill="lightslateblue", col="black")) + ggthemes::theme_economist_white() + labs(title = "Variable Importance Plot", subtitle = "removed all income variables", caption = "Own calculations")
+rf <- randomForest(poverty_level~.,data=train[,-18], ntree=100, proximity=TRUE)
 
-## RANDOM FOREST
-
-library(randomForest)
-
-model1 <- randomForest(poverty_level~ ., data = train, importance = TRUE)
-model1
-
-model2 <- randomForest(poverty_level ~ ., data = train, ntree = 500, mtry = 6, importance = TRUE)
-model2
-
-predTrain <- predict(model2, train, type = "class")
-table(predTrain, train$poverty_level)
-
-predValid <- predict(model2, test, type = "class")
-
-mean(predValid == test$poverty_level)
-table(predValid, test$poverty_level)
-
-#############################################################
-
-# Define the control
-trControl <- trainControl(method = "cv",
-                          number = 10,
-                          search = "grid")
-
-set.seed(1234)
-# Run the model
-rf_default <- train(poverty_level~.,
-                    data = train,
-                    method = "rf",
-                    metric = "Accuracy",
-                    trControl = trControl)
-
-### SEARCG FOR BEST MTRY (11)
-set.seed(1234)
-tuneGrid <- expand.grid(.mtry = c(1: 17))
-rf_mtry <- train(poverty_level~.,
-                 data = train,
-                 method = "rf",
-                 metric = "Accuracy",
-                 tuneGrid = tuneGrid,
-                 trControl = trControl,
-                 importance = TRUE,
-                 nodesize = 14,
-                 ntree = 300)
-print(rf_mtry)
-
-best_mtry <- rf_mtry$bestTune$mtry
-
-## SEARCH FOR BEST MAXNODES
-
-store_maxnode <- list()
-tuneGrid <- expand.grid(.mtry = best_mtry)
-for (maxnodes in c(1: 15)) {
-    set.seed(1234)
-    rf_maxnode <- train(poverty_level~.,
-                        data = train,
-                        method = "rf",
-                        metric = "Accuracy",
-                        tuneGrid = tuneGrid,
-                        trControl = trControl,
-                        importance = TRUE,
-                        nodesize = 14,
-                        maxnodes = maxnodes,
-                        ntree = 300)
-    current_iteration <- toString(maxnodes)
-    store_maxnode[[current_iteration]] <- rf_maxnode
-}
-results_mtry <- resamples(store_maxnode)
-summary(results_mtry)
-
-########################################################################
-
-rf <- randomForest(poverty_level~.,data=train[,-17], ntree=100, proximity=TRUE)
 table(predict(rf),train$poverty_level)
 plot(rf)
 importance(rf)
 varImpPlot(rf)
 
-rfpred <- predict(rf, newdata=test[,-17])
+rfpred <- predict(rf, newdata=test[,-18])
 table(rfpred,test$poverty_level)
 plot(margin(rf,test$poverty_level))
 
@@ -402,7 +328,9 @@ accuracy <-(sum(diag(cm)))/sum(cm)
 
 ###
 set.seed(222)
-rf <- randomForest(poverty_level~.,data=train[,-17], proximity=TRUE)
+rf <-randomForest(x=train[,-18],y=train$poverty_level, ntree=500)
+
+
 p1 <- predict(rf, train)
 confusionMatrix(p1, train$poverty_level)
 
@@ -411,7 +339,7 @@ confusionMatrix(p2, test$poverty_level)
 
 plot(rf)
 
-t <- tuneRF(train[,-17], train[,17],
+t <- tuneRF(train[,-18], train[,18],
             stepFactor = 0.5,
             plot = TRUE,
             ntreeTry = 150,
@@ -423,4 +351,6 @@ hist(treesize(rf), main = "No. of Nodes for the Trees", col = "mediumpurple4")
 varImpPlot(rf, sort = T, n.var = 10,
            main = "Top 10 - Variable Importance")
 
+#######
+rf <-randomForest(x=train[,-18],y=train$poverty_level, ntree=500)
 
