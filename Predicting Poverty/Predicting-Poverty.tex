@@ -202,13 +202,15 @@
 
 \begin{abstract}
 \small{
-Abstract to be written here. The abstract should not be too long and
-should provide the reader with a good understanding what you are writing
-about. Academic papers are not like novels where you keep the reader in
-suspense. To be effective in getting others to read your paper, be as
-open and concise about your findings here as possible. Ideally, upon
-reading your abstract, the reader should feel he / she must read your
-paper in entirety.
+South Africa has extremely high levels of poverty for an upper
+middle-class country. To help reduce the poverty levels, the government
+has many grants that are available to households that intend to improve
+the quality of life of poor South African's. However, accurate targeting
+is challenging due to the lack of income data. Machine learning
+techniques can improve the distribution of grants by predicting poverty
+levels. This paper will show that \emph{decision trees} and
+\emph{random forest} models predict poverty levels with a high degree of
+accuracy in South Africa.
 }
 \end{abstract}
 
@@ -216,7 +218,7 @@ paper in entirety.
 
 \begin{keyword}
 \footnotesize{
-Multivariate GARCH \sep Kalman Filter \sep Copula \\ \vspace{0.3cm}
+Machine Learning, ~Poverty Prediction, ~South Africa. \\ \vspace{0.3cm}
 \textit{JEL classification} L250 \sep L100
 }
 \end{keyword}
@@ -279,15 +281,63 @@ problem, households are subject to a proxy means test (PMT) to identify
 whether a household qualifies for social assistant. This essay will try
 to identify new methods to identify households that are below the food
 poverty line, lower-bound poverty line and upper bound poverty line
-using machine learning techniques.
+using machine learning techniques. After analyzing various different
+models, the paper concludes that a decision tree and random forest model
+most accurately predicts poverty.
 
-Structure \ldots{} `
+The paper proceeds as follows. Section 2 presents a brief literature
+review with respects to poverty in South Africa. Section 3 discuss the
+data manipulations and analyses descriptive statistics. Section 4
+provides a theoretical discussion about the methodology used. Section 5
+reports of the results, and finally, section 6 concludes.
 
 \hypertarget{literature-review}{%
 \section{Literature Review}\label{literature-review}}
 
-Write a short literature review here on the background of SOuth Africa -
-max one page
+Social spending has become a major tool for targeting resources to the
+poor. Since apartheid, the poor and vulnerable get significantly more
+then their share of social spending. However, poverty levels in South
+Africa have not improved much. Government has gone to considerable
+lengths to improve targeting and access for the poor to social services
+but the underlying reasons for the improvement in targeting are not
+solely related to good policy and delivery. Social spending is not
+distributed efficiently which implies that the poor receive limited
+gains from any grants that they receive
+\protect\hyperlink{ref-van2012better}{Van der Berg \& Moses}
+(\protect\hyperlink{ref-van2012better}{2012}).
+
+SA's post-transition government has enjoyed considerable success in
+shifting spending to the poor. But the overwhelming message conveyed by
+the data on social service delivery is that social spending has often
+not produced the desired social outcomes, both in social delivery
+programmes, and in households, particularly the most vulnerable. SA
+urgently needs to strengthen the links between fiscal resource shifts
+and social outcomes.
+
+In light of the COVID-19 pandemic, social spending is now more important
+than ever as many individuals have lost their jobs, and many families
+their homes. The government responded to the pandemic by increasing
+social spending however there is still uncertainty as to whether social
+grants are being successfully targeted.
+\protect\hyperlink{ref-kohler2020covid}{Köhler \& Bhorat}
+(\protect\hyperlink{ref-kohler2020covid}{2020}) showed that grants make
+up a big portion of total monthly household income for poor households
+and provides a stable income for the most vulnerable. Therefore, the
+accurate targeting of social programs is extremely important.
+
+Machine learning techniques can help predict poverty, and by extension,
+improve the targeting of social programs. Impressive working has been
+done by \protect\hyperlink{ref-jean2016combining}{Jean, Burke, Xie,
+Davis, Lobell \& Ermon}
+(\protect\hyperlink{ref-jean2016combining}{2016}) where the researchers
+use machine learning techniques to estimate consumption expenditure from
+high-resolution satellite imagery.
+\protect\hyperlink{ref-blumenstock2015predicting}{Blumenstock, Cadamuro
+\& On} (\protect\hyperlink{ref-blumenstock2015predicting}{2015})
+successfully used machine learning techniques to predict wealth
+throughout Rwanda. This paper will focus on evaluating the best machine
+learning model to predict poverty levels in South Africa. The next
+section will give an overview of the data used for this study.
 
 \hypertarget{data}{%
 \section{Data}\label{data}}
@@ -358,27 +408,26 @@ below the food poverty line. This implies that I have an extremely
 imbalanced dataset. This is important as it will have an effect on the
 machine learning techniques that I implement later on.
 
-For some descriptive statistics, I analyze some of the variable in more
-details. From the density plots in figure 3.3, I can see that households
-whose average income per person falls below the upper-bound poverty line
-(green line) tend to have slightly older head of household (head\_age)
-then those household belonging to other poverty levels.
-
-A household size (hholdsz) of 1-2 individuals tend have a larger
-probability to be non-vulnerable (yellow line), where larger household
-size of 3-5 individuals then have a larger probability of falling below
-the food poverty line.
-
-Total expenditure (Q814Exp) is higher for the non-vulnerable households,
-which makes sense as they receive a higher income.
-
-The total number of rooms (Q55TotRm) seem to be distributed similarly,
-with non-vulnerable households having a slightly smaller distribution.
-This comes as no suprise as these non-vulnerable households tend to have
-a smaller household size, implying that they need less bedrooms.
-
-Non-vulnerable household also have much larger property valuation
-(Q58Val), which could imply that they have a higher standard of living.
+Furthermore, I analyze some of the variable in more details. From the
+density plots in figure 3.3, it shows that households whose average
+income per person falls below the upper-bound poverty line (green line)
+tend to have slightly older head of household
+(\textbackslash emph\{head\_age\}) then those household belonging to
+other poverty levels. A household size (\emph{hholdsz}) of 1-2
+individuals tend have a larger probability to be non-vulnerable (yellow
+line), where larger household size of 3-5 individuals then have a larger
+probability of falling below the food poverty line. This implies that
+smaller households are more well-off than larger households. Total
+expenditure (\emph{Q814Exp}) is higher for the non-vulnerable
+households, which makes sense as they receive a higher income and
+therefore have more money to spend. The total number of rooms
+(\emph{Q55TotRm}) seem to be distributed similarly, with non-vulnerable
+households having a slightly smaller distribution. This comes as no
+surprise as these non-vulnerable households tend to have a smaller
+household size, implying that they need less bedrooms. Furthermore,
+non-vulnerable household have much larger property valuation
+(\emph{Q58Val}), which could imply that they have a higher standard of
+living.
 
 \begin{figure}[H]
 
@@ -389,8 +438,8 @@ Non-vulnerable household also have much larger property valuation
 \caption{Distribution of certain variables by poverty level \label{Figure3}}\label{fig:Figure3}
 \end{figure}
 
-Before we start building models we can also analysis which variables are
-correlated with our dependent variable (which is is poverty level).
+Before we start building models I also analysis which variables are
+correlated with the dependent variable (which is is poverty level).
 Figure 3.4 displays the top 10 variables that are correlated with the
 dependent variable. Our top four that are positively correlated are
 \textit{econact hh}, which is a binary variable indicating whether or
@@ -400,7 +449,7 @@ which is a numeric variable displaying total household income, and
 \emph{Q89aGrant}, which is a binary variable indicating whether the
 household receives a grant or not.
 
-variables that are negatively correlated with the dependent variable is
+Variables that are negatively correlated with the dependent variable is
 the sex of the head of the household (\emph{head sex}), whether or not
 the household owns a washing machine (\emph{Q821WashM}), the household
 size (\emph{hholdsz}), the amount spent on rent or mortgage of property
@@ -592,9 +641,9 @@ analyzing models with the fastest computational time.
 \caption{Speed versus Macro F1 }
 \end{figure}
 
-Figure 5.3 displays that \emph{naive bayes} preforms slightly better in
+Figure 5.3 displays that \emph{naive bayes} performs slightly better in
 terms of accuracy when compared to the macro \(F_1\) score whereas the
-rest of the models preform similarly. This suggest that random forest
+rest of the models perform similarly. This suggest that random forest
 (\emph{ranger}) is the most accurate when predicting poverty across all
 the measures, however, the computational time is extensive. If you are
 willing to compromise on the accuracy of a model, then decision tree
@@ -682,6 +731,92 @@ health on children. It also seems that poorer households receive more
 than two grants, however, the grants fail to keep the household above
 the food-poverty line.
 
+\hypertarget{random-forest-1}{%
+\subsection{Random Forest}\label{random-forest-1}}
+
+The default random forest performs 500 trees, and the number of
+variables tried at each split are 4. Averaging across all the trees, the
+out-of-bag (OOB) error rate, which measures the prediction error of the
+random forest model, is equal to 1.27 percent. The classification error
+for the food poverty line is 2.7 percent, for the lower-bound poverty is
+8.3 percent, for the upper-bound poverty line is 3.8 percent, and for
+the non-vulnerable is 0.12 percent.
+
+Figure 5.6 plots the error rate across the numerous amounts of decision
+trees; thus, we can find which number of trees provide the lowest error
+rate. AS the number of trees increase, the error rate stabilizes. After
+40 decision trees, the error rate seems to stay relatively constant
+without any significant change.
+
+\begin{figure}[H]
+
+{\centering \includegraphics{Predicting-Poverty_files/figure-latex/Figure9-1} 
+
+}
+
+\caption{Mean square error of forest\label{Figure9}}\label{fig:Figure9}
+\end{figure}
+
+\hypertarget{comparing-important-variables}{%
+\subsection{Comparing important
+variables}\label{comparing-important-variables}}
+
+The table below compares the most important features of the \emph{rpart}
+and the \emph{multinom}. The \emph{multinom} models Is used since it is
+the only other model that the \emph{varImp} function will accept. For
+the \emph{rpart} model, the most important variables come as no
+surprise. The income variables are the most important, followed by
+whether the head of the household is economically active and then
+household expenditure. We have evaluated these the 4 most important
+variables here when we analysed decision trees in section 5.2. The most
+important variables for \emph{multinom} varies greatly from
+\emph{rpart}, however these variables have also been discussed in
+section 5.2, where I took out all the income variables from the dataset.
+What is interesting is that the \emph{multinom} does not consider any of
+the income variables to be important, as here they have not been removed
+from the dataset. This results is especially interesting as
+\emph{multinom} is a close second for the best performing model in terms
+of accuracy.
+
+\begin{table}
+
+\caption{\label{tab:unnamed-chunk-4}Most important variables, `rpart` vs. `multinom`}
+\centering
+\begin{tabular}[t]{l|r|l|r}
+\hline
+Variable & Overall & Variable & Overall\\
+\hline
+income\_pp & 100.00000 & adults & 100.000000\\
+\hline
+totmhinc & 43.11656 & hholdsz & 50.561742\\
+\hline
+Q42Msal\_hh & 34.42951 & chld17yr\_hh & 49.433191\\
+\hline
+econact\_hh & 21.29235 & econact\_hh & 2.515908\\
+\hline
+Q814Exp & 12.80371 & Q89aGrant & 1.628790\\
+\hline
+\end{tabular}
+\end{table}
+
+\hypertarget{conclusion}{%
+\section{Conclusion}\label{conclusion}}
+
+South Africa has extremely high levels of poverty, therefore accurate
+targeting of social programs is very important. Machine learning
+techniques presents new ways to analyze data and can help improve the
+targeting of social programs, and by extension, possibly reduce poverty.
+This paper attempted to analyze which classification machine learning
+model best predict poverty levels in South Africa. Seven classification
+machine learning models were considered in total, and each evaluated and
+compared using various version of the \(F_1\) metrics. Decision tree
+provides a fairly accurate model to predict poverty with an extremely
+fast computational time. On the other hand, Random Forest has perfect
+accuracy, but the computational time is almost 30 times that of the
+decision tree. Therefore, when predicting poverty, there is some
+compromise between computational time and accuracy. The paper concludes
+that machine learning techniques can successfully help predict poverty.
+
 \newpage
 
 \hypertarget{references}{%
@@ -690,6 +825,10 @@ the food-poverty line.
 
 \hypertarget{refs}{}
 \begin{CSLReferences}{1}{0}
+\leavevmode\hypertarget{ref-blumenstock2015predicting}{}%
+Blumenstock, J., Cadamuro, G. \& On, R. 2015. Predicting poverty and
+wealth from mobile phone metadata. \emph{Science}. 350(6264):1073--1076.
+
 \leavevmode\hypertarget{ref-boehmke2019hands}{}%
 Boehmke, B. \& Greenwell, B.M. 2019. \emph{Hands-on machine learning
 with r}. CRC Press.
@@ -706,6 +845,16 @@ Duflo, E. 2003. Grandmothers and granddaughters: Old-age pensions and
 intrahousehold allocation in south africa. \emph{The World Bank Economic
 Review}. 17(1):1--25.
 
+\leavevmode\hypertarget{ref-jean2016combining}{}%
+Jean, N., Burke, M., Xie, M., Davis, W.M., Lobell, D.B. \& Ermon, S.
+2016. Combining satellite imagery and machine learning to predict
+poverty. \emph{Science}. 353(6301):790--794.
+
+\leavevmode\hypertarget{ref-kohler2020covid}{}%
+Köhler, T. \& Bhorat, H. 2020. COVID-19, social protection and the
+labour market in south africa: Are social grants being targeted at the
+most vulnerable?
+
 \leavevmode\hypertarget{ref-leibbrandt2010trends}{}%
 Leibbrandt, M., Woolard, I., Finn, A. \& Argent, J. 2010. Trends in
 south african income distribution and poverty since the fall of
@@ -715,25 +864,16 @@ apartheid.
 Stats, S. 2011. Social profile of vulnerable groups in south africa
 2002-2010. \emph{Pretoria: Government Printer}.
 
+\leavevmode\hypertarget{ref-van2012better}{}%
+Van der Berg, S. \& Moses, E. 2012. How better targeting of social
+spending affects social delivery in south africa. \emph{Development
+Southern Africa}. 29(1):127--139.
+
 \leavevmode\hypertarget{ref-vanderberg2017}{}%
 Yu, D. \& Van der Berg, S. 2017. South african poverty: The current
 situation and trends since the transition to democracy.
 
 \end{CSLReferences}
-
-\hypertarget{appendix}{%
-\section*{Appendix}\label{appendix}}
-\addcontentsline{toc}{section}{Appendix}
-
-\hypertarget{appendix-a}{%
-\subsection*{Appendix A}\label{appendix-a}}
-\addcontentsline{toc}{subsection}{Appendix A}
-
-Some appendix information here
-
-\hypertarget{appendix-b}{%
-\subsection*{Appendix B}\label{appendix-b}}
-\addcontentsline{toc}{subsection}{Appendix B}
 
 \bibliography{Tex/ref}
 

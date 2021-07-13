@@ -32,7 +32,7 @@ Email1: "20190565\\@sun.ac.za" # First Author's Email address
 
 CorrespAuthor_1: FALSE  # If corresponding author is author 3, e.g., use CorrespAuthor_3: TRUE
 
-keywords: "Multivariate GARCH \\sep Kalman Filter \\sep Copula" # Use \\sep to separate
+keywords: "Machine Learning, \\ Poverty Prediction, \\ South Africa." # Use \\sep to separate
 JELCodes: "L250 \\sep L100"
 
 # ----- Manage headers and footers:
@@ -84,7 +84,7 @@ output:
     fig_width: 3.5 # Adjust default figure sizes. This can also be done in the chunks of the text.
     fig_height: 3.5
 abstract: |
-  Abstract to be written here. The abstract should not be too long and should provide the reader with a good understanding what you are writing about. Academic papers are not like novels where you keep the reader in suspense. To be effective in getting others to read your paper, be as open and concise about your findings here as possible. Ideally, upon reading your abstract, the reader should feel he / she must read your paper in entirety.
+  South Africa has extremely high levels of poverty for an upper middle-class country.  To help reduce the poverty levels, the government has many grants that are available to households that intend to improve the quality of life of poor South African’s. However, accurate targeting is challenging due to the lack of income data. Machine learning techniques can improve the distribution of grants by predicting poverty levels. This paper will show that \emph{decision trees} and \emph{random forest} models predict poverty levels with a high degree of accuracy in South Africa. 
 ---
 
 <!-- First: Set your default preferences for chunk options: -->
@@ -156,13 +156,20 @@ test <- house.simple[-dt,]
 
 Since apartheid ended in 1994, the South African Government has committed a significant number of resources to distribute grants effectively and efficiently to the poor and the vulnerable. However, South Africa has remained a country with extremely high levels of inequality and poverty for an upper middle-income country @stats2011social. Previous literature has shown that poverty levels are higher in rural areas than in urban areas. This is largely due to rural household not having access to the same employment opportunities has urban households. South Africa is a country with high levels of unemployment and extremely low wages. This implies that individuals that are economically active can still fall below the upper or lower bound poverty line due to the low wages that they receive @leibbrandt2010trends. 
 
-Poverty remains unacceptably high for a country of South Africa’s economic status and remains closely associated with race.  Thus, poverty reduction remains one of the key economic goals. Poverty in money terms has declined markedly since apartheid ended in 1994. This was made possible by the expansion of the social grant system. However, accurately targeting social welfare programs can be challenging given that income data is often incorrect @vanderberg2017. To overcome this problem, households are subject to a proxy means test (PMT) to identify whether a household qualifies for social assistant.  This essay will try to identify new methods to identify households that are below the food poverty line, lower-bound poverty line and upper bound poverty line using machine learning techniques. 
+Poverty remains unacceptably high for a country of South Africa’s economic status and remains closely associated with race.  Thus, poverty reduction remains one of the key economic goals. Poverty in money terms has declined markedly since apartheid ended in 1994. This was made possible by the expansion of the social grant system. However, accurately targeting social welfare programs can be challenging given that income data is often incorrect @vanderberg2017. To overcome this problem, households are subject to a proxy means test (PMT) to identify whether a household qualifies for social assistant.  This essay will try to identify new methods to identify households that are below the food poverty line, lower-bound poverty line and upper bound poverty line using machine learning techniques. After analyzing various different models, the paper concludes that a decision tree and random forest model most accurately predicts poverty. 
 
-Structure … `
+The paper proceeds as follows. Section 2 presents a brief literature review with respects to poverty in South Africa. Section 3 discuss the data manipulations and analyses descriptive statistics. Section 4 provides a theoretical discussion about the methodology used. Section 5 reports of the results, and finally, section 6 concludes. 
 
 # Literature Review 
 
-Write a short literature review here on the background of SOuth Africa - max one page 
+Social spending has become a major tool for targeting resources to the poor. Since apartheid, the poor and vulnerable get significantly more then their share of social spending. However, poverty levels in South Africa have not improved much. Government has gone to considerable lengths to improve targeting and access for the poor to social services but the underlying reasons for the improvement in targeting are not solely related to good policy and delivery. Social spending is not distributed efficiently which implies that the poor receive limited gains from any grants that they receive @van2012better.
+
+SA’s post-transition government has enjoyed considerable success in shifting spending to the poor. But the overwhelming message conveyed by the data on social service delivery is that social spending has often not produced the desired social outcomes, both in social delivery programmes, and in households, particularly the most vulnerable. SA urgently needs to strengthen the links between fiscal resource shifts and social outcomes.
+
+In light of the COVID-19 pandemic, social spending is now more important than ever as many individuals have lost their jobs, and many families their homes. The government responded to the pandemic by increasing social spending however there is still uncertainty as to whether social grants are being successfully targeted. @kohler2020covid showed that grants make up a big portion of total monthly household income for poor households and provides a stable income for the most vulnerable. Therefore, the accurate targeting of social programs is extremely important. 
+
+Machine learning techniques can help predict poverty, and by extension, improve the targeting of social programs. Impressive working has been done by @jean2016combining where the researchers use machine learning techniques to estimate consumption expenditure from high-resolution satellite imagery. @blumenstock2015predicting successfully used machine learning techniques to predict wealth throughout Rwanda. This paper will focus on evaluating the best machine learning model to predict poverty levels in South Africa. The next section will give an overview of the data used for this study. 
+
 
 # Data 
 
@@ -207,15 +214,7 @@ plot1 <- train %>%
 ```
 Figure 2 shows that in our training dataset, 73.5 percent of households are non-vulnerable and 9.6 percent of households monthly income falls below the food poverty line. This implies that I have an extremely imbalanced dataset. This is important as it will have an effect on the machine learning techniques that I implement later on. 
 
-For some descriptive statistics, I analyze some of the variable in more details. From the density plots in figure 3.3, I can see that households whose average income per person falls below the upper-bound poverty line (green line) tend to have slightly older head of household (head_age) then those household belonging to other poverty levels. 
-
-A household size (hholdsz) of 1-2 individuals tend have a larger probability to be non-vulnerable (yellow line), where larger household size of 3-5 individuals then have a larger probability of falling below the food poverty line. 
-
-Total expenditure (Q814Exp) is higher for the non-vulnerable households, which makes sense as they receive a higher income. 
-
-The total number of rooms (Q55TotRm) seem to be distributed similarly, with non-vulnerable households having a slightly smaller distribution. This comes as no suprise as these non-vulnerable households tend to have a smaller household size, implying that they need less bedrooms. 
-
-Non-vulnerable household also have much larger property valuation (Q58Val), which could imply that they have a higher standard of living. 
+Furthermore, I analyze some of the variable in more details. From the density plots in figure 3.3, it shows that households whose average income per person falls below the upper-bound poverty line (green line) tend to have slightly older head of household (\emph{head_age}) then those household belonging to other poverty levels. A household size (\emph{hholdsz}) of 1-2 individuals tend have a larger probability to be non-vulnerable (yellow line), where larger household size of 3-5 individuals then have a larger probability of falling below the food poverty line. This implies that smaller households are more well-off than larger households. Total expenditure (\emph{Q814Exp}) is higher for the non-vulnerable households, which makes sense as they receive a higher income and therefore have more money to spend. The total number of rooms (\emph{Q55TotRm}) seem to be distributed similarly, with non-vulnerable households having a slightly smaller distribution. This comes as no surprise as these non-vulnerable households tend to have a smaller household size, implying that they need less bedrooms. Furthermore, non-vulnerable household have much larger property valuation (\emph{Q58Val}), which could imply that they have a higher standard of living. 
 
 ```{r Figure3,  warning =  FALSE, fig.align = 'center', fig.cap = "Distribution of certain variables by poverty level \\label{Figure3}", fig.ext = 'png', fig.height = 3, fig.width = 6}
 plot_target_by_var <- function(df, variable){
@@ -239,9 +238,9 @@ grid.arrange(p_age, p_size, p_hhexp, p_cellphone, p_room , p_val, nrow = 2, top 
 
 ```
 
-Before we start building models we can also analysis which variables are correlated with our dependent variable (which is is poverty level). Figure 3.4 displays the top 10 variables that are correlated with the dependent variable. Our top four that are positively correlated are \textit{econact hh}, which is a binary variable indicating whether or not the household is economically active, \emph{Q814Exp}, which is a numeric variable display total household expenditure, \emph{totmhinc}, which is a numeric variable displaying total household income, and \emph{Q89aGrant}, which is a binary variable indicating whether the household receives a grant or not. 
+Before we start building models I also analysis which variables are correlated with the dependent variable (which is is poverty level). Figure 3.4 displays the top 10 variables that are correlated with the dependent variable. Our top four that are positively correlated are \textit{econact hh}, which is a binary variable indicating whether or not the household is economically active, \emph{Q814Exp}, which is a numeric variable display total household expenditure, \emph{totmhinc}, which is a numeric variable displaying total household income, and \emph{Q89aGrant}, which is a binary variable indicating whether the household receives a grant or not. 
 
-variables that are negatively correlated with the dependent variable is the sex of the head of the household (\emph{head sex}), whether or not the household owns a washing machine (\emph{Q821WashM}), the household size (\emph{hholdsz}), the amount spent on rent or mortgage of property per month (\emph{Q57Rent}) and the number of adults in the household (\emph{adults}). 
+Variables that are negatively correlated with the dependent variable is the sex of the head of the household (\emph{head sex}), whether or not the household owns a washing machine (\emph{Q821WashM}), the household size (\emph{hholdsz}), the amount spent on rent or mortgage of property per month (\emph{Q57Rent}) and the number of adults in the household (\emph{adults}). 
 
 ```{r Figure4,  warning =  FALSE, fig.align = 'center', fig.cap = "Correlation with dependent variable \\label{Figure4}", fig.ext = 'png', fig.height = 4, fig.width = 5}
 
@@ -428,7 +427,7 @@ plot4 <- ggplot(data=df) +
     ggthemes::theme_economist_white() +
     theme(legend.position = "none")
 ```
-Figure 5.3 displays that \emph{naive bayes} preforms slightly better in terms of accuracy when compared to the macro \(F_1\) score whereas the rest of the models preform similarly. This suggest that random forest (\emph{ranger}) is the most accurate when predicting poverty across all the measures, however, the computational time is extensive. If you are willing to compromise on the accuracy of a model, then decision tree (\emph{rpart}) is the best model, which serves a high degree of accuracy and an extremely fast computational time. Now that I have determined which models are the best to predict poverty, decisions tree and random forest will be analyzed. 
+Figure 5.3 displays that \emph{naive bayes} performs slightly better in terms of accuracy when compared to the macro \(F_1\) score whereas the rest of the models perform similarly. This suggest that random forest (\emph{ranger}) is the most accurate when predicting poverty across all the measures, however, the computational time is extensive. If you are willing to compromise on the accuracy of a model, then decision tree (\emph{rpart}) is the best model, which serves a high degree of accuracy and an extremely fast computational time. Now that I have determined which models are the best to predict poverty, decisions tree and random forest will be analyzed. 
 \begin{figure}
 \centerline{\includegraphics[scale=0.65]{weightedF1.png}}
 \caption{Speed versus Weighted F1 }
@@ -455,16 +454,41 @@ Furthermore, households that have a head of younger than 60 years of age, tend t
 
 ## Random Forest 
 
-The default random forest preforms 500 trees, and the number of variables tried at each split are 4. Averaging across all the trees, the out-of-bag (OOB) error rate, which measures the prediction error of the random forest model, is equal to 1.27 percent.  The classification error for the food poverty line is 2.7 percent, for the lower-bound poverty is 8.3 percent, for the upper-bound poverty line is 3.8 percent, and for the non-vulnerable is 0.12 percent. 
+The default random forest performs 500 trees, and the number of variables tried at each split are 4. Averaging across all the trees, the out-of-bag (OOB) error rate, which measures the prediction error of the random forest model, is equal to 1.27 percent.  The classification error for the food poverty line is 2.7 percent, for the lower-bound poverty is 8.3 percent, for the upper-bound poverty line is 3.8 percent, and for the non-vulnerable is 0.12 percent. 
 
-Figure 5.6 plots the error rate across the numerous amounts of decision trees; thus, we can find which number of trees provide the lowest error rate. After 40 decision trees, the error rate seems to stay relatively constant without any significant change. 
+Figure 5.6 plots the error rate across the numerous amounts of decision trees; thus, we can find which number of trees provide the lowest error rate. AS the number of trees increase, the error rate stabilizes. After 40 decision trees, the error rate seems to stay relatively constant without any significant change. 
 
 
-```{r  Figure9,  warning =  FALSE, fig.align = 'center', fig.cap = "Mean square error of forest\\label{Figure9}", fig.ext = 'png', fig.height = 3, fig.width = 4}
-rf <- randomForest(poverty_level~.,data=train[,-18], ntree=100, proximity=TRUE)
-plot(rf)
+```{r  Figure9,  warning =  FALSE, fig.align = 'center', fig.cap = "Mean square error of forest\\label{Figure9}", fig.ext = 'png', fig.height = 5, fig.width = 4}
+random_forest <- randomForest(poverty_level~.,data=train[,-18])
+plot(random_forest)
+```
+## Comparing important variables
+The table below compares the most important features of the \emph{rpart} and the \emph{multinom}. The \emph{multinom} models Is used since it is the only other model that the \emph{varImp} function will accept. For the \emph{rpart} model, the most important variables come as no surprise. The income variables are the most important, followed by whether the head of the household is economically active and then household expenditure. We have evaluated these the 4 most important variables here when we analysed decision trees in section 5.2. The most important variables for \emph{multinom} varies greatly from \emph{rpart}, however these variables have also been discussed in section 5.2, where I took out all the income variables from the dataset. What is interesting is that the \emph{multinom} does not consider any of the income variables to be important, as here they have not been removed from the dataset. This results is especially interesting as \emph{multinom} is a close second for the best performing model in terms of accuracy. 
+```{r}
+get_imp <- function(modelname){
+    imp <- data.frame(varImp(modelname)$importance)
+    imp$Variable <- rownames(imp)
+    imp <- imp[order(-imp$Overall)[1:5], ] %>% select(Variable, Overall)
+    rownames(imp) <- 1:5
+    return(imp)
+}
+imp_multinom <- get_imp(train_models$multinom)
+imp_rpart <- get_imp(train_models$rpart)
+get_imp <- function(modelname){
+    imp <- data.frame(varImp(modelname)$importance)
+    imp$Variable <- rownames(imp)
+    imp <- imp[order(-imp$Overall)[1:10], ] %>% select(Variable, Overall)
+    rownames(imp) <- 1:10
+    return(imp)
+}
+cbind(imp_rpart, imp_multinom) %>% kable(caption = "Most important variables, `rpart` vs. `multinom`") %>% kable_styling()
+
 ```
 
+
+# Conclusion 
+South Africa has extremely high levels of poverty, therefore accurate targeting of social programs is very important. Machine learning techniques presents new ways to analyze data and can help improve the targeting of social programs, and by extension, possibly reduce poverty. This paper attempted to analyze which classification machine learning model best predict poverty levels in South Africa. Seven classification machine learning models were considered in total, and each evaluated and compared using various version of the \(F_1\) metrics. Decision tree provides a fairly accurate model to predict poverty with an extremely fast computational time. On the other hand, Random Forest has perfect accuracy, but the computational time is almost 30 times that of the decision tree. Therefore, when predicting poverty, there is some compromise between computational time and accuracy. The paper concludes that machine learning techniques can successfully help predict poverty. 
 <!-- Make title of bibliography here: -->
 <!-- \newpage -->
 
@@ -474,12 +498,4 @@ plot(rf)
 
 <div id="refs"></div>
 
-
-# Appendix {-}
-
-## Appendix A {-}
-
-Some appendix information here
-
-## Appendix B {-}
 
